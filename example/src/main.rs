@@ -19,8 +19,7 @@ async fn main() {
         list_items_route(),
         get_item_route().with_state::<AppState>(),
         create_item_route()
-    ]
-        .build_router(state);
+    ].build_router(state);
 
     rustapi::serve(app).await;
 }

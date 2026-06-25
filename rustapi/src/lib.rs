@@ -299,6 +299,8 @@ fn build_redoc_page() -> String {
 pub struct RustAPI<S = ()> {
     routes: Vec<Route<S>>,
     layers: Vec<RouterBuilder<S>>,
+    title: String,
+    version: String,
 }
 
 impl<S> Default for RustAPI<S>
@@ -315,7 +317,22 @@ where
     S: Clone + Send + Sync + 'static,
 {
     pub fn new() -> Self {
-        Self { routes: Vec::new(), layers: Vec::new() }
+        Self { 
+            routes: Vec::new(), 
+            layers: Vec::new(),
+            title: "RustAPI".to_string(),
+            version: "0.1.0".to_string(),
+        }
+    }
+
+    pub fn title(mut self, title: &str) -> Self {
+        self.title = title.to_string();
+        self
+    }
+
+    pub fn version(mut self, version: &str) -> Self {
+        self.version = version.to_string();
+        self
     }
 
     pub fn route(mut self, route: Route<S>) -> Self {
@@ -413,8 +430,8 @@ where
         let mut openapi_json = json!({
             "openapi": "3.0.0",
             "info": {
-                "title": "RustAPI",
-                "version": "0.1.0"
+                "title": self.title,
+                "version": self.version
             },
             "paths": paths
         });
