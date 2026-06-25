@@ -2,6 +2,9 @@ use colored::Colorize;
 use std::fs;
 use std::process::{Command, Stdio};
 
+/// Create a new RustAPI project with the given name.
+/// This will run `cargo init`, add necessary dependencies to `Cargo.toml`,
+/// and create a boilerplate `src/main.rs`.
 pub fn run_new(name: String) {
     println!(
         "\n  {} Creating new RustAPI project: {}\n",

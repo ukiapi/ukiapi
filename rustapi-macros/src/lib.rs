@@ -110,6 +110,7 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
     expanded.into()
 }
 
+/// Macro to define a data model. Derives Serialize, Deserialize, JsonSchema, Validate, Clone, and TS.
 #[proc_macro_attribute]
 pub fn model(_args: TokenStream, input: TokenStream) -> TokenStream {
     let item: proc_macro2::TokenStream = input.into();
@@ -121,26 +122,31 @@ pub fn model(_args: TokenStream, input: TokenStream) -> TokenStream {
     expanded.into()
 }
 
+/// Define a GET endpoint.
 #[proc_macro_attribute]
 pub fn get(args: TokenStream, input: TokenStream) -> TokenStream {
     route_macro(args, input, "get")
 }
 
+/// Define a POST endpoint.
 #[proc_macro_attribute]
 pub fn post(args: TokenStream, input: TokenStream) -> TokenStream {
     route_macro(args, input, "post")
 }
 
+/// Define a PUT endpoint.
 #[proc_macro_attribute]
 pub fn put(args: TokenStream, input: TokenStream) -> TokenStream {
     route_macro(args, input, "put")
 }
 
+/// Define a DELETE endpoint.
 #[proc_macro_attribute]
 pub fn delete(args: TokenStream, input: TokenStream) -> TokenStream {
     route_macro(args, input, "delete")
 }
 
+/// Define a PATCH endpoint.
 #[proc_macro_attribute]
 pub fn patch(args: TokenStream, input: TokenStream) -> TokenStream {
     route_macro(args, input, "patch")

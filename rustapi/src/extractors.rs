@@ -6,6 +6,7 @@ use axum::{
 use serde_json::{json, Value};
 use validator::Validate;
 
+/// An extractor for query parameters that performs validation.
 pub struct Query<T: Validate>(pub T);
 
 impl<T, S> FromRequestParts<S> for Query<T>
@@ -42,6 +43,7 @@ where
     }
 }
 
+/// An extractor for JSON bodies that performs validation.
 pub struct ValidatedJson<T: Validate>(pub T);
 
 impl<T, S> FromRequest<S> for ValidatedJson<T>

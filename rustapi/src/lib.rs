@@ -51,6 +51,9 @@ pub async fn serve(router: axum::Router<()>) {
         .unwrap();
 }
 
+/// A macro to initialize a `RustAPI` instance with a set of routes.
+///
+/// Usage: `routes![AppState, route1(), route2()]`
 #[macro_export]
 macro_rules! routes {
     ($state:ty, $($x:expr),* $(,)?) => {
@@ -64,16 +67,19 @@ macro_rules! routes {
     };
 }
 
+/// Helper to generate a JSON schema for a type.
 pub fn schema_for<T: schemars::JsonSchema>() -> serde_json::Value {
     serde_json::to_value(schemars::schema_for!(T)).unwrap()
 }
 
+/// A structured exception that can be converted into an HTTP response.
 pub struct HTTPException {
     pub status_code: axum::http::StatusCode,
     pub detail: String,
 }
 
 impl HTTPException {
+    /// Create a new `HTTPException`.
     pub fn new(status_code: axum::http::StatusCode, detail: impl Into<String>) -> Self {
         Self {
             status_code,
@@ -94,12 +100,14 @@ impl IntoResponse for HTTPException {
     }
 }
 
+/// A wrapper for responses to explicitly set the HTTP status code.
 pub struct Response<T> {
     pub status_code: axum::http::StatusCode,
     pub body: T,
 }
 
 impl<T> Response<T> {
+    /// Create a new `Response` with the given status code and body.
     pub fn new(status_code: axum::http::StatusCode, body: T) -> Self {
         Self { status_code, body }
     }
@@ -108,6 +116,7 @@ impl<T> Response<T> {
 impl<T> IntoResponse for Response<T>
 where
     T: IntoResponse,
+    T: Send + Sync + 'static,
 {
     fn into_response(self) -> axum::response::Response {
         (self.status_code, self.body).into_response()
