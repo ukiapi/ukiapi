@@ -33,3 +33,5 @@ Thumbs.db
 # dotenv files
 .env
 .env.*
+BATTLE.md
+FASTAPI_RADIOGRAPHY.md
