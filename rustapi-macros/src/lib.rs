@@ -37,7 +37,7 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
         if let syn::FnArg::Typed(pat_type) = input {
             if let Type::Path(type_path) = &*pat_type.ty {
                 if let Some(segment) = type_path.path.segments.last() {
-                    if segment.ident.to_string() == "State" {
+                    if segment.ident == "State" {
                         if let PathArguments::AngleBracketed(ref args) = segment.arguments {
                             if let Some(GenericArgument::Type(inner_ty)) = args.args.first() {
                                 return Some(quote! { #inner_ty });
@@ -55,8 +55,19 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
     let req_schema = func.sig.inputs.iter().find_map(|input| {
         if let syn::FnArg::Typed(pat_type) = input {
             if let Some((name, inner)) = extractor_inner_type(&pat_type.ty) {
-                if name == "Json" || name == "ValidatedJson" || name == "Query" {
+                if name == "Json" || name == "ValidatedJson" {
                     return Some(quote! { .with_request_schema(::rustapi::schema_for::<#inner>()) });
+                }
+            }
+        }
+        None
+    });
+
+    let query_schema = func.sig.inputs.iter().find_map(|input| {
+        if let syn::FnArg::Typed(pat_type) = input {
+            if let Some((name, inner)) = extractor_inner_type(&pat_type.ty) {
+                if name == "Query" {
+                    return Some(quote! { .with_query_schema(::rustapi::schema_for::<#inner>()) });
                 }
             }
         }
@@ -89,6 +100,7 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
             ::rustapi::Route::#method_ident(#path, #fn_name)
                 #req_schema
                 #res_schema
+                #query_schema
         }
     };
 
@@ -99,7 +111,8 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
 pub fn model(_args: TokenStream, input: TokenStream) -> TokenStream {
     let item: proc_macro2::TokenStream = input.into();
     let expanded = quote! {
-        #[derive(::rustapi::Serialize, ::rustapi::Deserialize, ::rustapi::JsonSchema, ::validator::Validate, Clone)]
+        #[derive(::rustapi::Serialize, ::rustapi::Deserialize, ::rustapi::JsonSchema, ::validator::Validate, Clone, ::rustapi::ts_rs::TS)]
+        #[ts(export, crate = "::rustapi::ts_rs")]
         #item
     };
     expanded.into()

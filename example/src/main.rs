@@ -2,12 +2,12 @@ mod models;
 mod routes;
 
 use std::sync::{Arc, Mutex};
-use crate::models::Item;
+use crate::models::ItemDb;
 use crate::routes::*;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub items: Arc<Mutex<Vec<Item>>>,
+    pub items: Arc<Mutex<Vec<ItemDb>>>,
 }
 
 #[tokio::main]

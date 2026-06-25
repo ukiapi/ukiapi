@@ -14,3 +14,4 @@ schemars = "0.8"
 tower = "0.5.3"
 tower-http = { version = "0.5", features = ["full"] }
 futures = "0.3"
+ts-rs = "12.0.1"

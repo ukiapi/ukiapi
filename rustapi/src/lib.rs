@@ -11,6 +11,7 @@ pub use serde::{Deserialize, Serialize};
 pub use serde_json::{json, Value};
 pub use schemars::JsonSchema;
 pub use validator::Validate;
+pub use ts_rs;
 
 /// Start the server. Reads `RUSTAPI_HOST` and `RUSTAPI_PORT` from the
 /// environment (set automatically by `rustapi run` / `rustapi dev`),
@@ -44,7 +45,43 @@ pub async fn serve(router: axum::Router<()>) {
 }
 
 
-use axum::extract::FromRequest;
+use axum::extract::{FromRequest, FromRequestParts};
+use axum::http::request::Parts;
+
+pub struct Query<T: Validate>(pub T);
+
+impl<T, S> FromRequestParts<S> for Query<T>
+where
+    T: serde::de::DeserializeOwned + Validate + Send + Sync + 'static,
+    S: Send + Sync + 'static,
+{
+    type Rejection = (axum::http::StatusCode, Json<Value>);
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let axum::extract::Query(query) = axum::extract::Query::<T>::from_request_parts(parts, state)
+            .await
+            .map_err(|e| {
+                (
+                    axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+                    Json(json!({
+                        "detail": format!("Invalid query parameters: {}", e),
+                        "errors": null
+                    })),
+                )
+            })?;
+
+        query.validate().map_err(|e| {
+            (
+                axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+                Json(json!({
+                    "detail": format!("Validation failed: {}", e),
+                })),
+            )
+        })?;
+        
+        Ok(Query(query))
+    }
+}
 
 pub struct ValidatedJson<T: Validate>(pub T);
 
@@ -100,6 +137,7 @@ pub struct Route<S = ()> {
     pub(crate) build: RouterBuilder<S>,
     pub request_schema: Option<Value>,
     pub response_schema: Option<Value>,
+    pub query_schema: Option<Value>,
 }
 
 impl<S> Route<S>
@@ -119,7 +157,14 @@ where
             "PATCH" => Box::new(move |router| router.route(path, axum::routing::patch(handler))),
             _ => unreachable!(),
         };
-        Self { method, path, build, request_schema: None, response_schema: None }
+        Self {
+            method,
+            path,
+            build,
+            request_schema: None,
+            response_schema: None,
+            query_schema: None,
+        }
     }
 
     pub fn with_request_schema(mut self, schema: Value) -> Self {
@@ -129,6 +174,11 @@ where
 
     pub fn with_response_schema(mut self, schema: Value) -> Self {
         self.response_schema = Some(schema);
+        self
+    }
+
+    pub fn with_query_schema(mut self, schema: Value) -> Self {
+        self.query_schema = Some(schema);
         self
     }
 
@@ -191,6 +241,7 @@ impl Route<()> {
             build: new_build,
             request_schema: self.request_schema,
             response_schema: self.response_schema,
+            query_schema: self.query_schema,
         }
     }
 }
@@ -247,7 +298,16 @@ fn build_redoc_page() -> String {
 
 pub struct RustAPI<S = ()> {
     routes: Vec<Route<S>>,
-    layers: Vec<Box<dyn FnOnce(axum::Router<S>) -> axum::Router<S> + Send>>,
+    layers: Vec<RouterBuilder<S>>,
+}
+
+impl<S> Default for RustAPI<S>
+where
+    S: Clone + Send + Sync + 'static,
+{
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<S> RustAPI<S>
@@ -313,6 +373,28 @@ where
                 operation["responses"]["200"]["content"] = json!({
                     "application/json": { "schema": process_schema(schema) }
                 });
+            }
+
+            if let Some(schema) = &route.query_schema {
+                let schema = process_schema(schema);
+                if let Some(props) = schema.get("properties").and_then(|p| p.as_object()) {
+                    let required_fields = schema.get("required")
+                        .and_then(|r| r.as_array())
+                        .map(|arr| arr.iter().filter_map(|v| v.as_str()).collect::<Vec<_>>())
+                        .unwrap_or_default();
+                        
+                    let mut parameters = Vec::new();
+                    for (param_name, param_schema) in props {
+                        let is_required = required_fields.contains(&param_name.as_str());
+                        parameters.push(json!({
+                            "name": param_name,
+                            "in": "query",
+                            "required": is_required,
+                            "schema": param_schema
+                        }));
+                    }
+                    operation["parameters"] = json!(parameters);
+                }
             }
 
             if let Some(schema) = &route.request_schema {
