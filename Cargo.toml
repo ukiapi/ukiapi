@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "rustapi",
+    "rustapi-macros",
+    "example",
+]
+resolver = "2"
