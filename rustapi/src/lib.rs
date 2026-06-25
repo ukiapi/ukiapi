@@ -33,8 +33,10 @@ pub async fn serve(router: axum::Router<()>) {
         std::process::exit(1);
     });
 
-    println!("🚀  Listening on http://{}", addr);
-    println!("📄  Docs at     http://{}/docs", addr);
+    println!("🚀  Listening on  http://{}", addr);
+    println!("📄  Swagger UI    http://{}/docs", addr);
+    println!("📘  ReDoc         http://{}/redoc", addr);
+    println!("🔧  OpenAPI JSON  http://{}/openapi.json", addr);
 
     axum::serve(listener, router.into_make_service())
         .await
@@ -193,135 +195,55 @@ impl Route<()> {
     }
 }
 
-
-fn schema_to_html(schema: &Value, depth: usize) -> String {
-    let indent = "  ".repeat(depth);
-    match schema.get("type").and_then(|t| t.as_str()) {
-        Some("object") => {
-            let title = schema.get("title").and_then(|t| t.as_str()).unwrap_or("object");
-            let mut html = format!("{}<div class=\"schema-object\">\n", indent);
-            html.push_str(&format!("{}  <strong>{}</strong> {{", indent, title));
-            if let Some(props) = schema.get("properties").and_then(|p| p.as_object()) {
-                html.push('\n');
-                for (name, prop) in props {
-                    let prop_type = prop.get("type").and_then(|t| t.as_str()).unwrap_or("any");
-                    let required = schema.get("required")
-                        .and_then(|r| r.as_array())
-                        .map(|r| r.iter().any(|v| v.as_str() == Some(name)))
-                        .unwrap_or(false);
-                    let req_mark = if required { " *" } else { "" };
-                    html.push_str(&format!(
-                        "{}    <span class=\"prop\">{}{}:</span> <span class=\"type\">{}</span>\n",
-                        indent, name, req_mark, prop_type
-                    ));
-
-                }
-            }
-            html.push_str(&format!("{}}}", indent));
-            html
-        }
-        Some("array") => {
-            let title = schema.get("title").and_then(|t| t.as_str()).unwrap_or("array");
-            let inner = if let Some(items) = schema.get("items") {
-                if items.get("$ref").is_some() {
-                    let ref_name = items.get("$ref").and_then(|r| r.as_str()).unwrap_or("?");
-                    let short = ref_name.rsplit('/').next().unwrap_or(ref_name);
-                    format!("<span class=\"type\">{}</span>", short)
-                } else {
-                    schema_to_html(items, depth + 1)
-                }
-            } else {
-                String::new()
-            };
-            format!("{}<div class=\"schema-array\"><strong>{}</strong> [{}]</div>", indent, title, inner.trim())
-        }
-        _ => {
-            match schema.get("type").and_then(|t| t.as_str()) {
-                Some(t) => format!("{}<span class=\"type\">{}</span>", indent, t),
-                None => format!("{}<span class=\"type\">any</span>", indent),
-            }
-        }
-    }
-}
-
-fn build_docs_page(openapi: &Value) -> String {
-    let mut html = String::from(
-        r#"<!DOCTYPE html>
+/// Swagger UI — served at /docs
+fn build_swagger_page() -> String {
+    r#"<!DOCTYPE html>
 <html>
-<head><title>RustAPI Docs</title>
-<style>
-body{font-family:sans-serif;max-width:900px;margin:40px auto;padding:0 20px;background:#fafafa}
-h1{border-bottom:2px solid #333;padding-bottom:10px}
-.endpoint{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px;margin:16px 0}
-.endpoint-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.method{display:inline-block;padding:4px 10px;border-radius:4px;color:#fff;font-weight:700;font-size:14px}
-.method.GET{background:#61affe}
-.method.POST{background:#49cc90}
-.method.PUT{background:#fca130}
-.method.DELETE{background:#f93e3e}
-.method.PATCH{background:#50e3c2}
-.path{font-family:monospace;font-size:16px;font-weight:600}
-.schema-section{margin:8px 0;padding:8px;background:#f5f5f5;border-radius:4px}
-.schema-section h4{margin:0 0 8px;font-size:14px;color:#666}
-.schema-object,.schema-array{font-family:monospace;font-size:13px;margin:4px 0}
-.prop{color:#881391}
-.type{color:#1c7cd6}
-a{color:#1c7cd6;text-decoration:none}
-a:hover{text-decoration:underline}
-</style></head>
+<head>
+  <title>RustAPI — Swagger UI</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+</head>
 <body>
-<h1>RustAPI</h1>
-<p>Auto-generated OpenAPI 3.0 documentation</p>
-"#);
-
-    if let Some(paths) = openapi["paths"].as_object() {
-        for (path, item) in paths {
-            if let Some(methods) = item.as_object() {
-                for (method, operation) in methods {
-                    html.push_str("<div class=\"endpoint\">");
-                    html.push_str(&format!(
-                        "<div class=\"endpoint-header\"><span class=\"method {}\">{}</span><span class=\"path\">{}</span></div>",
-                        method.to_uppercase(),
-                        method.to_uppercase(),
-                        path
-                    ));
-
-                    if let Some(body) = operation.get("requestBody") {
-                        if let Some(content) = body.get("content") {
-                            if let Some(json_content) = content.get("application/json") {
-                                if let Some(schema) = json_content.get("schema") {
-                                    html.push_str("<div class=\"schema-section\"><h4>Request Body</h4>");
-                                    html.push_str(&schema_to_html(schema, 0));
-                                    html.push_str("</div>");
-                                }
-                            }
-                        }
-                    }
-
-                    if let Some(responses) = operation.get("responses") {
-                        if let Some(r200) = responses.get("200") {
-                            if let Some(content) = r200.get("content") {
-                                if let Some(json_content) = content.get("application/json") {
-                                    if let Some(schema) = json_content.get("schema") {
-                                        html.push_str("<div class=\"schema-section\"><h4>Response</h4>");
-                                        html.push_str(&schema_to_html(schema, 0));
-                                        html.push_str("</div>");
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    html.push_str("</div>");
-                }
-            }
-        }
-    }
-
-    html.push_str("<p><a href=\"/openapi.json\">View OpenAPI JSON</a></p>");
-    html.push_str("</body></html>");
-    html
+<div id="swagger-ui"></div>
+<script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+<script>
+  window.onload = () => {
+    SwaggerUIBundle({
+      url: '/openapi.json',
+      dom_id: '#swagger-ui',
+      presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
+      layout: 'BaseLayout',
+      deepLinking: true,
+      tryItOutEnabled: true,
+    });
+  };
+</script>
+</body>
+</html>
+"#.to_string()
 }
+
+/// ReDoc — served at /redoc
+fn build_redoc_page() -> String {
+    r#"<!DOCTYPE html>
+<html>
+<head>
+  <title>RustAPI — ReDoc</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+  <style>body { margin: 0; padding: 0; }</style>
+</head>
+<body>
+  <redoc spec-url='/openapi.json'></redoc>
+  <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+</body>
+</html>
+"#.to_string()
+}
+
 
 pub struct RustAPI<S = ()> {
     routes: Vec<Route<S>>,
@@ -360,6 +282,7 @@ where
             router = layer_fn(router);
         }
         let mut paths = serde_json::Map::new();
+        let mut components_schemas = serde_json::Map::new();
 
         for route in self.routes {
             let path_key = route.path;
@@ -372,9 +295,23 @@ where
                 "responses": { "200": { "description": "OK" } }
             });
 
+            let mut process_schema = |schema: &Value| -> Value {
+                let mut schema_clone = schema.clone();
+                if let Some(obj) = schema_clone.as_object_mut() {
+                    if let Some(defs) = obj.remove("definitions") {
+                        if let Some(defs_obj) = defs.as_object() {
+                            for (k, v) in defs_obj {
+                                components_schemas.insert(k.clone(), v.clone());
+                            }
+                        }
+                    }
+                }
+                schema_clone
+            };
+
             if let Some(schema) = &route.response_schema {
                 operation["responses"]["200"]["content"] = json!({
-                    "application/json": { "schema": schema }
+                    "application/json": { "schema": process_schema(schema) }
                 });
             }
 
@@ -382,7 +319,7 @@ where
                 operation["requestBody"] = json!({
                     "required": true,
                     "content": {
-                        "application/json": { "schema": schema }
+                        "application/json": { "schema": process_schema(schema) }
                     }
                 });
             }
@@ -391,7 +328,7 @@ where
             router = (route.build)(router);
         }
 
-        let openapi_json = json!({
+        let mut openapi_json = json!({
             "openapi": "3.0.0",
             "info": {
                 "title": "RustAPI",
@@ -400,12 +337,28 @@ where
             "paths": paths
         });
 
-        let docs_html = build_docs_page(&openapi_json);
+        if !components_schemas.is_empty() {
+            openapi_json["components"] = json!({
+                "schemas": components_schemas
+            });
+        }
+
+        // Fix all references from #/definitions/ to #/components/schemas/
+        let mut openapi_str = serde_json::to_string(&openapi_json).unwrap();
+        openapi_str = openapi_str.replace("#/definitions/", "#/components/schemas/");
+        openapi_json = serde_json::from_str(&openapi_str).unwrap();
+
+        let swagger_html = build_swagger_page();
+        let redoc_html = build_redoc_page();
 
         let stateless_docs = axum::Router::new()
             .route(
                 "/docs",
-                axum::routing::get(|| async move { Html(docs_html) }),
+                axum::routing::get(|| async move { Html(swagger_html) }),
+            )
+            .route(
+                "/redoc",
+                axum::routing::get(|| async move { Html(redoc_html) }),
             )
             .route(
                 "/openapi.json",

@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+      - id: make-lint
+        name: Run 'make lint'
+        entry: make lint
+        language: system
+        files: \.(rs)$
+        always_run: false
+        pass_filenames: false

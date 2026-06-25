@@ -1,42 +1,13 @@
-use rustapi::{get, post, model, json, Value, ValidatedJson};
-use axum::extract::State;
-use std::sync::{Arc, Mutex};
+mod models;
+mod routes;
 
-#[model]
-struct Item {
-    name: String,
-    price: f64,
-}
+use std::sync::{Arc, Mutex};
+use crate::models::Item;
+use crate::routes::*;
 
 #[derive(Clone)]
-struct AppState {
-    items: Arc<Mutex<Vec<Item>>>,
-}
-
-
-#[get("/hello")]
-async fn hello() -> &'static str {
-    "Hello from RustAPI!"
-}
-
-#[get("/items")]
-async fn list_items(State(state): State<AppState>) -> rustapi::Json<Vec<Item>> {
-    let items = state.items.lock().unwrap();
-    rustapi::Json(items.clone())
-}
-
-#[get("/items/{id}")]
-async fn get_item(rustapi::Path(id): rustapi::Path<i32>) -> rustapi::Json<Value> {
-    rustapi::Json(json!({"id": id, "name": "item", "price": 9.99}))
-}
-
-#[post("/items")]
-async fn create_item(
-    State(state): State<AppState>,
-    ValidatedJson(body): ValidatedJson<Item>,
-) -> rustapi::Json<Item> {
-    state.items.lock().unwrap().push(body.clone());
-    rustapi::Json(body)
+pub struct AppState {
+    pub items: Arc<Mutex<Vec<Item>>>,
 }
 
 #[tokio::main]
