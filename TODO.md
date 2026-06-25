@@ -6,9 +6,9 @@
 [] Develop integrated Authentication and Authorization helpers (e.g., JWT, OAuth2).
 [] Create a testing client or utilities for easier API endpoint testing.
 [] Streamline/enhance Middleware integration (e.g., more explicit API or common middleware examples).
-[] Enhance explicit and declarative HTTP Status Code handling for responses.
+[x] Enhance explicit and declarative HTTP Status Code handling for responses.
 [] Streamline File Uploads with a dedicated abstraction (similar to FastAPI's `UploadFile`).
-[] Implement a structured HTTPException-like error handling mechanism.
+[x] Implement a structured HTTPException-like error handling mechanism.
 [] Integrate a declarative Security dependency injection mechanism (similar to FastAPI's `Security()`).
 [] Create an `APIRouter`-like class for modular API organization and route prefixing.
 [] Provide a unified `Request` object for comprehensive access to raw request details.

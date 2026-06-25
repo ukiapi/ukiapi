@@ -59,11 +59,20 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Dev { host, port, workers, reload } => {
+        Commands::Dev {
+            host,
+            port,
+            workers,
+            reload,
+        } => {
             print_banner("dev", &host, port, reload);
             run_dev(host, port, workers, reload);
         }
-        Commands::Run { host, port, workers } => {
+        Commands::Run {
+            host,
+            port,
+            workers,
+        } => {
             print_banner("run", &host, port, false);
             run_release(host, port, workers);
         }
@@ -74,11 +83,19 @@ fn main() {
 
 fn print_banner(mode: &str, host: &str, port: u16, reload: bool) {
     println!();
-    println!("  {}  {}", "🦀 RustAPI".bold(), format!("v{}", env!("CARGO_PKG_VERSION")).dimmed());
+    println!(
+        "  {}  {}",
+        "🦀 RustAPI".bold(),
+        format!("v{}", env!("CARGO_PKG_VERSION")).dimmed()
+    );
     println!(
         "  {}  {}",
         "mode:".dimmed(),
-        if mode == "dev" { "development".yellow().bold() } else { "production".green().bold() }
+        if mode == "dev" {
+            "development".yellow().bold()
+        } else {
+            "production".green().bold()
+        }
     );
     println!(
         "  {}  {}",

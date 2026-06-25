@@ -1,9 +1,9 @@
 mod models;
 mod routes;
 
-use std::sync::{Arc, Mutex};
 use crate::models::ItemDb;
 use crate::routes::*;
+use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -12,14 +12,19 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() {
-    let state = AppState { items: Arc::new(Mutex::new(Vec::new())) };
+    let state = AppState {
+        items: Arc::new(Mutex::new(Vec::new())),
+    };
 
-    let app = rustapi::routes![AppState,
+    let app = rustapi::routes![
+        AppState,
         hello_route().with_state::<AppState>(),
         list_items_route(),
-        get_item_route().with_state::<AppState>(),
-        create_item_route()
-    ].build_router(state);
+        get_item_route(),
+        create_item_route(),
+        trigger_error_route().with_state::<AppState>()
+    ]
+    .build_router(state);
 
     rustapi::serve(app).await;
 }
