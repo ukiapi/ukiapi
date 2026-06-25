@@ -31,8 +31,8 @@ pub fn run_new(name: String) {
     let mut cargo_toml = fs::read_to_string(&cargo_toml_path).unwrap();
 
     let deps = r#"
-rustapi = "0.1.0"
-rustapi-macros = "0.1.0"
+rustapi = { path = "../../rustapi" }
+rustapi-macros = { path = "../../rustapi-macros" }
 axum = "0.8"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
