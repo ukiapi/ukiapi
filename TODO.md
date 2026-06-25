@@ -10,7 +10,7 @@
 [] Streamline File Uploads with a dedicated abstraction (similar to FastAPI's `UploadFile`).
 [x] Implement a structured HTTPException-like error handling mechanism.
 [] Integrate a declarative Security dependency injection mechanism (similar to FastAPI's `Security()`).
-[] Create an `APIRouter`-like class for modular API organization and route prefixing.
+[x] Create an `APIRouter`-like class for modular API organization and route prefixing.
 [] Provide a unified `Request` object for comprehensive access to raw request details.
 [] Expose `HTTPConnection`-like details (client/server addresses, etc.) for granular connection access.
 [] Implement a unified `Response` class for explicit control over response types and headers.

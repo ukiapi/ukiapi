@@ -2,14 +2,14 @@ use crate::models::{ItemCreate, ItemDb, ItemResponse, ListItemsQuery};
 use crate::AppState;
 use axum::extract::State;
 use axum::http::StatusCode;
-use rustapi::{get, post, HTTPException, Response, ValidatedJson};
+use rustapi::{get, post, APIRouter, HTTPException, Response, ValidatedJson};
 
 #[get("/hello")]
 pub async fn hello() -> &'static str {
     "Hello from RustAPI!"
 }
 
-#[get("/items")]
+#[get("")]
 pub async fn list_items(
     State(state): State<AppState>,
     rustapi::Query(query): rustapi::Query<ListItemsQuery>,
@@ -37,7 +37,7 @@ pub async fn list_items(
     rustapi::Json(results)
 }
 
-#[get("/items/{id}")]
+#[get("/{id}")]
 pub async fn get_item(
     State(state): State<AppState>,
     rustapi::Path(id): rustapi::Path<i32>,
@@ -54,7 +54,7 @@ pub async fn get_item(
     }))
 }
 
-#[post("/items")]
+#[post("")]
 pub async fn create_item(
     State(state): State<AppState>,
     ValidatedJson(body): ValidatedJson<ItemCreate>,
@@ -87,4 +87,13 @@ pub async fn trigger_error() -> Result<&'static str, HTTPException> {
         StatusCode::BAD_REQUEST,
         "This is a deliberate error",
     ))
+}
+
+pub fn items_router() -> APIRouter<AppState> {
+    APIRouter::new()
+        .prefix("/items")
+        .tag("items")
+        .route(list_items_route())
+        .route(get_item_route())
+        .route(create_item_route())
 }

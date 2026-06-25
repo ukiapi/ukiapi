@@ -19,9 +19,7 @@ async fn main() {
     let app = rustapi::routes![
         AppState,
         hello_route().with_state::<AppState>(),
-        list_items_route(),
-        get_item_route(),
-        create_item_route(),
+        items_router(),
         trigger_error_route().with_state::<AppState>()
     ]
     .build_router(state);
