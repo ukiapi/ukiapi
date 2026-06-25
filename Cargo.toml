@@ -3,6 +3,6 @@ members = [
     "rustapi",
     "rustapi-macros",
     "rustapi-cli",
-    "example", "my-test-app-4",
+    "example", "my-test-app",
 ]
 resolver = "2"
