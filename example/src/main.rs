@@ -16,13 +16,21 @@ async fn main() {
         items: Arc::new(Mutex::new(Vec::new())),
     };
 
-    let app = rustapi::routes![
+    rustapi::routes![
         AppState,
         hello_route().with_state::<AppState>(),
         items_router(),
         trigger_error_route().with_state::<AppState>()
     ]
-    .build_router(state);
-
-    rustapi::serve(app).await;
+    .title("Example API")
+    .version("1.0.0")
+    .on_startup(|_state| async {
+        println!("🚀 Application starting up...");
+    })
+    .on_shutdown(|_state| async {
+        println!("🛑 Application shutting down...");
+    })
+    .mount("/static", ".")
+    .serve(state)
+    .await;
 }

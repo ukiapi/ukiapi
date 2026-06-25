@@ -1,0 +1,6 @@
+🚀 Application starting up...
+🚀  Listening on  http://127.0.0.1:3000
+📄  Swagger UI    http://127.0.0.1:3000/docs
+📘  ReDoc         http://127.0.0.1:3000/redoc
+🔧  OpenAPI JSON  http://127.0.0.1:3000/openapi.json
+🛑 Application shutting down...
