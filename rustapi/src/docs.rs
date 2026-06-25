@@ -1,7 +1,7 @@
 use axum::response::{Html, Json};
 use serde_json::{json, Value};
 
-/// Swagger UI — served at /docs
+/// Build the Swagger UI HTML page.
 pub fn build_swagger_page() -> String {
     r#"<!DOCTYPE html>
 <html>
@@ -32,7 +32,7 @@ pub fn build_swagger_page() -> String {
     .to_string()
 }
 
-/// ReDoc — served at /redoc
+/// Build the ReDoc HTML page.
 pub fn build_redoc_page() -> String {
     r#"<!DOCTYPE html>
 <html>
@@ -51,6 +51,7 @@ pub fn build_redoc_page() -> String {
 "#.to_string()
 }
 
+/// Process a JSON schema to move definitions to components/schemas.
 pub fn process_openapi_schema(
     schema: &Value,
     components_schemas: &mut serde_json::Map<String, Value>,
@@ -68,6 +69,7 @@ pub fn process_openapi_schema(
     schema_clone
 }
 
+/// Finalize the OpenAPI specification by merging paths and schemas.
 pub fn finalize_openapi_spec(
     title: String,
     version: String,
@@ -91,6 +93,7 @@ pub fn finalize_openapi_spec(
     serde_json::from_str(&openapi_str).unwrap()
 }
 
+/// Create a router to serve OpenAPI JSON and documentation UI.
 pub fn docs_router(openapi_json: Value) -> axum::Router {
     let swagger_html = build_swagger_page();
     let redoc_html = build_redoc_page();
