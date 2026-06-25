@@ -1,0 +1,13 @@
+[package]
+name = "rustapi-cli"
+version = "0.1.0"
+edition = "2021"
+description = "CLI for RustAPI — run and develop RustAPI projects"
+
+[[bin]]
+name = "rustapi"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+colored = "2"

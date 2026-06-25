@@ -12,6 +12,36 @@ pub use serde_json::{json, Value};
 pub use schemars::JsonSchema;
 pub use validator::Validate;
 
+/// Start the server. Reads `RUSTAPI_HOST` and `RUSTAPI_PORT` from the
+/// environment (set automatically by `rustapi run` / `rustapi dev`),
+/// falling back to `127.0.0.1:3000`.
+///
+/// ```rust
+/// #[tokio::main]
+/// async fn main() {
+///     let app = rustapi::routes![AppState, ...].build_router(state);
+///     rustapi::serve(app).await;
+/// }
+/// ```
+pub async fn serve(router: axum::Router<()>) {
+    let host = std::env::var("RUSTAPI_HOST").unwrap_or_else(|_| "127.0.0.1".into());
+    let port = std::env::var("RUSTAPI_PORT").unwrap_or_else(|_| "3000".into());
+    let addr = format!("{}:{}", host, port);
+
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap_or_else(|e| {
+        eprintln!("error: could not bind to {}: {}", addr, e);
+        std::process::exit(1);
+    });
+
+    println!("🚀  Listening on http://{}", addr);
+    println!("📄  Docs at     http://{}/docs", addr);
+
+    axum::serve(listener, router.into_make_service())
+        .await
+        .unwrap();
+}
+
+
 use axum::extract::FromRequest;
 
 pub struct ValidatedJson<T: Validate>(pub T);
