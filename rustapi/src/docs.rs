@@ -1,4 +1,5 @@
-use serde_json::Value;
+use axum::response::{Html, Json};
+use serde_json::{json, Value};
 
 /// Swagger UI — served at /docs
 pub fn build_swagger_page() -> String {
@@ -65,4 +66,46 @@ pub fn process_openapi_schema(
         }
     }
     schema_clone
+}
+
+pub fn finalize_openapi_spec(
+    title: String,
+    version: String,
+    paths: serde_json::Map<String, Value>,
+    components_schemas: serde_json::Map<String, Value>,
+) -> Value {
+    let mut openapi_json = json!({
+        "openapi": "3.0.0",
+        "info": {
+            "title": title,
+            "version": version
+        },
+        "paths": paths
+    });
+    if !components_schemas.is_empty() {
+        openapi_json["components"] = json!({ "schemas": components_schemas });
+    }
+    let openapi_str = serde_json::to_string(&openapi_json)
+        .unwrap()
+        .replace("#/definitions/", "#/components/schemas/");
+    serde_json::from_str(&openapi_str).unwrap()
+}
+
+pub fn docs_router(openapi_json: Value) -> axum::Router {
+    let swagger_html = build_swagger_page();
+    let redoc_html = build_redoc_page();
+
+    axum::Router::new()
+        .route(
+            "/docs",
+            axum::routing::get(|| async move { Html(swagger_html) }),
+        )
+        .route(
+            "/redoc",
+            axum::routing::get(|| async move { Html(redoc_html) }),
+        )
+        .route(
+            "/openapi.json",
+            axum::routing::get(|| async { Json(openapi_json) }),
+        )
 }

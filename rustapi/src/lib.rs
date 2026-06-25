@@ -16,7 +16,7 @@ pub use ts_rs;
 pub use validator::Validate;
 
 pub use extractors::{Query, ValidatedJson};
-pub use routing::{Route, RouterBuilder, RustAPI};
+pub use routing::{APIRouter, Routable, Route, RouterBuilder, RustAPI};
 
 /// Start the server. Reads `RUSTAPI_HOST` and `RUSTAPI_PORT` from the
 /// environment (set automatically by `rustapi run` / `rustapi dev`),
