@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 use colored::Colorize;
+use rustapi_cli::run_new;
 use std::process::{Command, Stdio};
 
 // ─── CLI definition ──────────────────────────────────────────────────────────
@@ -18,6 +19,12 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Create a new RustAPI project
+    New {
+        /// Name of the project
+        name: String,
+    },
+
     /// Run the app in development mode (debug build, optional hot-reload)
     Dev {
         /// Host to bind to
@@ -59,6 +66,9 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::New { name } => {
+            run_new(name);
+        }
         Commands::Dev {
             host,
             port,
@@ -137,18 +147,6 @@ fn run_dev(host: String, port: u16, workers: usize, reload: bool) {
     if reload {
         ensure_cargo_watch();
 
-        // cargo watch -x run
-        let watch_cmd = format!(
-            "RUSTAPI_HOST={} RUSTAPI_PORT={} {} cargo watch -x run",
-            host,
-            port,
-            env.iter()
-                .filter(|(k, _)| k != "RUSTAPI_HOST" && k != "RUSTAPI_PORT")
-                .map(|(k, v)| format!("{}={}", k, v))
-                .collect::<Vec<_>>()
-                .join(" ")
-        );
-
         let status = Command::new("cargo")
             .args(["watch", "-x", "run"])
             .envs(env)
@@ -160,7 +158,6 @@ fn run_dev(host: String, port: u16, workers: usize, reload: bool) {
                 std::process::exit(1);
             });
 
-        drop(watch_cmd); // used for docs only
         std::process::exit(status.code().unwrap_or(1));
     } else {
         // cargo run (debug)
