@@ -367,7 +367,7 @@ name = "example"
 version = "0.1.0"
 dependencies = [
  "axum",
- "rustapi 0.1.0",
+ "rustapi",
  "schemars",
  "serde",
  "serde_json",
@@ -844,19 +844,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "my-test-app"
-version = "0.1.0"
-dependencies = [
- "axum",
- "rustapi 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "schemars",
- "serde",
- "serde_json",
- "tokio",
- "validator",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.21.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1044,12 +1031,6 @@ dependencies = [
  "ts-rs",
  "validator",
 ]
-
-[[package]]
-name = "rustapi"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21f0cd18884d323fec157e384cba17eae8eb72fadf61aa702451282d81538ba5"
 
 [[package]]
 name = "rustapi-cli"

@@ -32,6 +32,7 @@ pub fn run_new(name: String) {
 
     let deps = r#"
 rustapi = "0.1.0"
+rustapi-macros = "0.1.0"
 axum = "0.8"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
@@ -48,8 +49,11 @@ schemars = "0.8"
 
     // 3. Create boilerplate main.rs
     let main_rs_path = format!("{}/src/main.rs", name);
-    let main_rs_content = r#"use rustapi::{get, post, json, Value, ValidatedJson};
+    let main_rs_content = r#"use rustapi::{routes, ValidatedJson, serve};
+use rustapi_macros::{get, post};
+use axum::Json;
 use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use validator::Validate;
 use schemars::JsonSchema;
 
@@ -68,20 +72,20 @@ pub async fn hello() -> &'static str {
 }
 
 #[post("/greet")]
-pub async fn greet(ValidatedJson(payload): ValidatedJson<HelloRequest>) -> rustapi::Json<Value> {
-    rustapi::Json(json!({ "message": format!("Hello, {}!", payload.name) }))
+pub async fn greet(ValidatedJson(payload): ValidatedJson<HelloRequest>) -> Json<Value> {
+    Json(json!({ "message": format!("Hello, {}!", payload.name) }))
 }
 
 #[tokio::main]
 async fn main() {
     let state = AppState {};
 
-    let app = rustapi::routes![AppState,
+    let app = routes![AppState,
         hello(),
         greet()
     ].build_router(state);
 
-    rustapi::serve(app).await;
+    serve(app).await;
 }
 "#;
     fs::write(&main_rs_path, main_rs_content).unwrap();
