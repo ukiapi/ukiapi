@@ -22,10 +22,7 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
     let path = parse_macro_input!(args as LitStr);
     let func = parse_macro_input!(input as ItemFn);
     let fn_name = &func.sig.ident;
-    let route_fn_name = syn::Ident::new(
-        &format!("{}_route", fn_name),
-        fn_name.span(),
-    );
+    let route_fn_name = syn::Ident::new(&format!("{}_route", fn_name), fn_name.span());
     let method_ident = syn::Ident::new(method, fn_name.span());
     let vis = &func.vis;
     let attrs = &func.attrs;
@@ -33,30 +30,36 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
     let block = &func.block;
 
     // Infer state type S from handler arguments
-    let state_ty = func.sig.inputs.iter().find_map(|input| {
-        if let syn::FnArg::Typed(pat_type) = input {
-            if let Type::Path(type_path) = &*pat_type.ty {
-                if let Some(segment) = type_path.path.segments.last() {
-                    if segment.ident == "State" {
-                        if let PathArguments::AngleBracketed(ref args) = segment.arguments {
-                            if let Some(GenericArgument::Type(inner_ty)) = args.args.first() {
-                                return Some(quote! { #inner_ty });
+    let state_ty = func
+        .sig
+        .inputs
+        .iter()
+        .find_map(|input| {
+            if let syn::FnArg::Typed(pat_type) = input {
+                if let Type::Path(type_path) = &*pat_type.ty {
+                    if let Some(segment) = type_path.path.segments.last() {
+                        if segment.ident == "State" {
+                            if let PathArguments::AngleBracketed(ref args) = segment.arguments {
+                                if let Some(GenericArgument::Type(inner_ty)) = args.args.first() {
+                                    return Some(quote! { #inner_ty });
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        None
-    }).unwrap_or_else(|| quote! { () });
-
+            None
+        })
+        .unwrap_or_else(|| quote! { () });
 
     // Detect request schema from first Json parameter
     let req_schema = func.sig.inputs.iter().find_map(|input| {
         if let syn::FnArg::Typed(pat_type) = input {
             if let Some((name, inner)) = extractor_inner_type(&pat_type.ty) {
                 if name == "Json" || name == "ValidatedJson" {
-                    return Some(quote! { .with_request_schema(::rustapi::schema_for::<#inner>()) });
+                    return Some(
+                        quote! { .with_request_schema(::rustapi::schema_for::<#inner>()) },
+                    );
                 }
             }
         }
