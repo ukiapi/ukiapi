@@ -8,6 +8,10 @@
 - 📝 **Automatic Documentation:** Built-in Swagger UI and ReDoc (via `schemars` and custom macros).
 - ✅ **Data Validation:** Seamless integration with `validator` for request and query parameters.
 - 🔗 **Type-Safe Routing:** Declarative routing using macros like `#[get]`, `#[post]`, etc.
+- 🔁 **Hot Reload:** Automatic recompilation on file changes via `--reload`.
+- 🧩 **Middleware:** Custom middleware, CORS, logging, compression, and timeout support.
+- 📁 **Static Files & Uploads:** Built-in file serving and multipart upload handling.
+- ⏳ **Background Tasks:** Schedule async tasks to run after the response is sent.
 - 📦 **FastAPI-like DX:** Familiar patterns for developers coming from Python.
 - 🛠️ **CLI Tooling:** Dedicated CLI for scaffolding and development.
 
@@ -16,7 +20,7 @@
 ### 1. Install the CLI
 
 ```bash
-cargo install --path rustapi-cli
+cargo install --git ssh://git@github.com/abundis29/rustapi.git rustapi-cli --tag v0.1.1
 ```
 
 ### 2. Create a new project
@@ -32,13 +36,18 @@ cd my-api
 rustapi dev
 ```
 
+Or with hot reload:
+
+```bash
+rustapi dev --reload
+```
+
 Your API will be running at `http://localhost:3000`, with interactive docs at `http://localhost:3000/docs`.
 
 ## 📖 Example
 
 ```rust
-use rustapi::{get, post, routes, serve, ValidatedJson};
-use axum::Json;
+use rustapi::{get, post, routes, ValidatedJson, Json, json};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use schemars::JsonSchema;
@@ -58,15 +67,20 @@ pub async fn hello() -> &'static str {
 }
 
 #[post("/items")]
-pub async fn create_item(ValidatedJson(payload): ValidatedJson<CreateItem>) -> Json<CreateItem> {
-    Json(payload)
+pub async fn create_item(ValidatedJson(payload): ValidatedJson<CreateItem>) -> Json<serde_json::Value> {
+    Json(json!({ "item": payload.name }))
 }
 
 #[tokio::main]
 async fn main() {
     let state = AppState {};
-    let app = routes![AppState, hello(), create_item()].build_router(state);
-    serve(app).await;
+
+    routes![AppState,
+        hello_route().with_state::<AppState>(),
+        create_item_route().with_state::<AppState>()
+    ]
+    .serve(state)
+    .await;
 }
 ```
 
@@ -75,7 +89,7 @@ async fn main() {
 - `rustapi`: Core library providing routing, extractors, and types.
 - `rustapi-macros`: Procedural macros for routing and models.
 - `rustapi-cli`: Command-line interface for managing RustAPI projects.
-- `example`: A reference implementation demonstrating features.
+- `example`: A reference implementation demonstrating all features.
 
 ## ⚖️ License
 
