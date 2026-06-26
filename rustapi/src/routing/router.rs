@@ -138,3 +138,15 @@ where
         api.mounts.extend(self.mounts);
     }
 }
+
+impl<S> crate::routing::middleware::MiddlewareExt<S> for APIRouter<S>
+where
+    S: Clone + Send + Sync + 'static,
+{
+    fn layer<F>(self, f: F) -> Self
+    where
+        F: Fn(Router<S>) -> Router<S> + Send + Sync + 'static,
+    {
+        self.layer(f)
+    }
+}

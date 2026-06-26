@@ -1,10 +1,12 @@
 pub mod api;
 pub mod route;
 pub mod router;
+pub mod middleware;
 
 pub use api::RustAPI;
 pub use route::{Routable, Route, RouteAdder};
 pub use router::APIRouter;
+pub use middleware::MiddlewareExt;
 use std::sync::Arc;
 use axum::Router;
 
