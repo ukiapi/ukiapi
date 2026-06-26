@@ -10,7 +10,7 @@ pub use router::APIRouter;
 use std::sync::Arc;
 
 pub mod methods {
-    pub use axum::routing::{delete, get, patch, post, put};
+    pub use axum::routing::{any, delete, get, patch, post, put};
 }
 
 pub type RouterBuilder<S> = Arc<dyn Fn(Router<S>) -> Router<S> + Send + Sync>;

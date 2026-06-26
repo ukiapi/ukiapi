@@ -19,9 +19,11 @@ pub mod test_client;
 pub mod tower;
 pub mod upload;
 pub mod utils;
+pub mod ws;
 
 pub use axum;
-pub use rustapi_macros::{delete, get, model, patch, post, put};
+pub use rustapi_macros::{delete, get, model, patch, post, put, websocket};
+pub use ws::{Message, WebSocket, WebSocketUpgrade};
 pub use schemars::JsonSchema;
 pub use serde::{Deserialize, Serialize};
 pub use serde_json::{json, Value};
