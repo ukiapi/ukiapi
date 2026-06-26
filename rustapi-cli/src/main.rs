@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 use colored::Colorize;
 use rustapi_cli::run_new;
 use std::process::{Command, Stdio};
+use std::env;
 
 // ─── CLI definition ──────────────────────────────────────────────────────────
 
@@ -141,14 +142,79 @@ fn build_env(host: &str, port: u16, workers: usize) -> Vec<(String, String)> {
 
 // ─── Dev runner (debug build, optional hot-reload) ───────────────────────────
 
+fn detect_bin() -> String {
+    let output = Command::new("cargo")
+        .args(["metadata", "--no-deps", "--format-version", "1"])
+        .output()
+        .unwrap_or_else(|e| {
+            eprintln!("{} Failed to run cargo metadata: {}", "error:".red().bold(), e);
+            std::process::exit(1);
+        });
+
+    if !output.status.success() {
+        eprintln!("{} cargo metadata failed", "error:".red().bold());
+        std::process::exit(1);
+    }
+
+    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap_or_else(|e| {
+        eprintln!("{} Failed to parse cargo metadata: {}", "error:".red().bold(), e);
+        std::process::exit(1);
+    });
+
+    let packages = json["packages"].as_array().unwrap();
+    let dir_name = env::current_dir()
+        .ok()
+        .and_then(|p| p.file_name().map(|n| n.to_string_lossy().to_string()))
+        .unwrap_or_default();
+
+    let cli_bins = ["rustapi", "rustapi-new"];
+
+    let mut bins: Vec<String> = Vec::new();
+    for pkg in packages {
+        if let Some(targets) = pkg["targets"].as_array() {
+            for target in targets {
+                if target["kind"].as_array().is_some_and(|k| k.iter().any(|v| v == "bin")) {
+                    if let Some(name) = target["name"].as_str() {
+                        if !cli_bins.contains(&name) {
+                            bins.push(name.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if bins.is_empty() {
+        eprintln!("{} No binary targets found", "error:".red().bold());
+        std::process::exit(1);
+    }
+
+    if bins.len() == 1 {
+        return bins.into_iter().next().unwrap();
+    }
+
+    // Multiple bins: prefer one matching directory name, then "example"
+    if let Some(idx) = bins.iter().position(|b| *b == dir_name) {
+        return bins.swap_remove(idx);
+    }
+    if let Some(idx) = bins.iter().position(|b| *b == "example") {
+        return bins.swap_remove(idx);
+    }
+
+    bins.into_iter().next().unwrap()
+}
+
 fn run_dev(host: String, port: u16, workers: usize, reload: bool) {
     let env = build_env(&host, port, workers);
+    let bin = detect_bin();
 
     if reload {
         ensure_cargo_watch();
 
         let status = Command::new("cargo")
-            .args(["watch", "-x", "run --bin example"])
+            .arg("watch")
+            .arg("-x")
+            .arg(format!("run --bin {bin}"))
             .envs(env)
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
@@ -160,9 +226,8 @@ fn run_dev(host: String, port: u16, workers: usize, reload: bool) {
 
         std::process::exit(status.code().unwrap_or(1));
     } else {
-        // cargo run (debug)
         let status = Command::new("cargo")
-            .args(["run", "--bin", "example"])
+            .args(["run", "--bin", &bin])
             .envs(env)
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
@@ -180,9 +245,10 @@ fn run_dev(host: String, port: u16, workers: usize, reload: bool) {
 
 fn run_release(host: String, port: u16, workers: usize) {
     let env = build_env(&host, port, workers);
+    let bin = detect_bin();
 
     let status = Command::new("cargo")
-        .args(["run", "--release", "--bin", "example"])
+        .args(["run", "--release", "--bin", &bin])
         .envs(env)
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
