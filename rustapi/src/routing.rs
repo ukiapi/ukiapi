@@ -1,13 +1,13 @@
 pub mod api;
+pub mod middleware;
 pub mod route;
 pub mod router;
-pub mod middleware;
 
 pub use api::RustAPI;
+use axum::Router;
+pub use middleware::MiddlewareExt;
 pub use route::{Routable, Route, RouteAdder};
 pub use router::APIRouter;
-pub use middleware::MiddlewareExt;
 use std::sync::Arc;
-use axum::Router;
 
 pub type RouterBuilder<S> = Arc<dyn Fn(Router<S>) -> Router<S> + Send + Sync>;

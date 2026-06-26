@@ -1,27 +1,21 @@
+use axum::extract::DefaultBodyLimit;
 use axum::{
-    middleware::{self, Next},
     extract::Request,
+    middleware::{self, Next},
     Router,
 };
+use std::convert::Infallible;
 use std::future::Future;
 use tower_http::{
-    cors::CorsLayer,
-    compression::CompressionLayer,
-    trace::TraceLayer,
-    timeout::TimeoutLayer,
+    compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer, trace::TraceLayer,
 };
-use axum::extract::DefaultBodyLimit;
-use std::convert::Infallible;
 
 /// Re-exports for common middleware layers.
 pub mod layers {
-    pub use tower_http::{
-        cors::CorsLayer,
-        compression::CompressionLayer,
-        trace::TraceLayer,
-        timeout::TimeoutLayer,
-    };
     pub use axum::extract::DefaultBodyLimit;
+    pub use tower_http::{
+        compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer, trace::TraceLayer,
+    };
 }
 
 /// A trait for adding middleware to RustAPI or APIRouter.
@@ -62,7 +56,8 @@ where
     where
         L: tower::Layer<axum::routing::Route> + Clone + Send + Sync + 'static,
         L::Service: tower::Service<Request> + Clone + Send + Sync + 'static,
-        <L::Service as tower::Service<Request>>::Response: axum::response::IntoResponse + Send + 'static,
+        <L::Service as tower::Service<Request>>::Response:
+            axum::response::IntoResponse + Send + 'static,
         <L::Service as tower::Service<Request>>::Error: Into<Infallible> + Send + 'static,
         <L::Service as tower::Service<Request>>::Future: Send + 'static,
     {

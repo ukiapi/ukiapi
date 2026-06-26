@@ -1,9 +1,9 @@
+use crate::RustAPI;
 use axum::{
     body::Body,
     http::{Request, Response},
 };
 use tower::ServiceExt;
-use crate::RustAPI;
 
 /// A simple client for testing RustAPI endpoints.
 pub struct TestClient {

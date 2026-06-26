@@ -1,10 +1,7 @@
-use axum::{
-    extract::FromRequestParts,
-    http::request::Parts,
-};
-use std::sync::{Arc, Mutex};
-use futures::future::BoxFuture;
 use crate::HTTPException;
+use axum::{extract::FromRequestParts, http::request::Parts};
+use futures::future::BoxFuture;
+use std::sync::{Arc, Mutex};
 
 /// A collection of tasks to be executed in the background after the response is sent.
 #[derive(Clone, Default)]

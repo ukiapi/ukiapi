@@ -1,13 +1,24 @@
-mod models;
-mod routes;
-
-use crate::models::ItemDb;
-use crate::routes::*;
+use axum::middleware::Next;
+use axum::response::IntoResponse;
+use example::routes::*;
+use example::AppState;
+use rustapi::middleware::CorsLayer;
+use rustapi::{MiddlewareExt, Request};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
-#[derive(Clone)]
-pub struct AppState {
-    pub items: Arc<Mutex<Vec<ItemDb>>>,
+async fn logging_middleware(req: Request, next: Next) -> axum::response::Response {
+    println!(
+        "--- Custom Middleware: Processing {} {} ---",
+        req.method(),
+        req.uri()
+    );
+    let response = next.run(req).await;
+    println!(
+        "--- Custom Middleware: Response status: {} ---",
+        response.status()
+    );
+    response.into_response()
 }
 
 #[tokio::main]
@@ -20,7 +31,9 @@ async fn main() {
         AppState,
         hello_route().with_state::<AppState>(),
         items_router(),
-        trigger_error_route().with_state::<AppState>()
+        trigger_error_route().with_state::<AppState>(),
+        background_handler_route().with_state::<AppState>(),
+        upload_handler_route().with_state::<AppState>()
     ]
     .title("Example API")
     .version("1.0.0")
@@ -31,6 +44,13 @@ async fn main() {
         println!("🛑 Application shutting down...");
     })
     .mount("/static", ".")
+    // Middleware
+    .middleware(logging_middleware)
+    .logger()
+    .compression()
+    .timeout(Duration::from_secs(30))
+    .body_limit(1024 * 1024) // 1MB
+    .cors(CorsLayer::permissive())
     .serve(state)
     .await;
 }
