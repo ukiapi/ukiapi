@@ -90,6 +90,12 @@ pub async fn trigger_error() -> Result<&'static str, HTTPException> {
     ))
 }
 
+
+#[get("/request-info")]
+pub async fn request_info(req: rustapi::Request) -> String {
+    format!("Request method: {}, Path: {}", req.method(), req.uri().path())
+}
+
 pub fn items_router() -> APIRouter<AppState> {
     APIRouter::new()
         .prefix("/items")
@@ -97,4 +103,5 @@ pub fn items_router() -> APIRouter<AppState> {
         .route(list_items_route())
         .route(get_item_route())
         .route(create_item_route())
+        .route(request_info_route().with_state::<AppState>())
 }

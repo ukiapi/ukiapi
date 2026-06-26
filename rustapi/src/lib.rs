@@ -1,10 +1,13 @@
 pub mod docs;
 pub mod extractors;
 pub mod routing;
+pub mod lifecycle;
+pub mod mount;
+pub mod route;
 
 pub use axum::{
     self,
-    extract::{Extension, Path, State},
+    extract::{Extension, Path, Request, State},
     response::{Html, IntoResponse},
     Json,
 };
@@ -16,7 +19,8 @@ pub use ts_rs;
 pub use validator::Validate;
 
 pub use extractors::{Query, ValidatedJson};
-pub use routing::{APIRouter, Routable, Route, RouterBuilder, RustAPI};
+pub use routing::{APIRouter, Routable, RouterBuilder, RustAPI};
+pub use route::Route;
 
 /// Start the server. Reads `RUSTAPI_HOST` and `RUSTAPI_PORT` from the
 /// environment (set automatically by `rustapi run` / `rustapi dev`),
@@ -47,6 +51,11 @@ pub async fn serve(router: axum::Router<()>) {
     println!("🔧  OpenAPI JSON  http://{}/openapi.json", addr);
 
     axum::serve(listener, router.into_make_service())
+        .with_graceful_shutdown(async move {
+            tokio::signal::ctrl_c()
+                .await
+                .expect("failed to install CTRL+C handler");
+        })
         .await
         .unwrap();
 }
