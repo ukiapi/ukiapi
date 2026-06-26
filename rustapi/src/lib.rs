@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod background_tasks;
 pub mod body;
 pub mod dependencies;
@@ -27,6 +28,7 @@ pub use serde_json::{json, Value};
 pub use ts_rs;
 pub use validator::Validate;
 
+pub use auth::{decode_jwt, encode_jwt, HTTPBearer, JWTAuth, OAuth2PasswordBearer};
 pub use background_tasks::BackgroundTasks;
 pub use dependencies::{security, Dependency, Depends, Security};
 pub use env_logger;

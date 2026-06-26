@@ -13,7 +13,7 @@ async fn test_hello_endpoint() {
 
     let client = TestClient::new(api, state);
 
-    let response = client.get("/hello").await;
+    let response = client.get("/hello").send().await;
     assert_eq!(response.status(), 200);
 }
 
@@ -27,6 +27,6 @@ async fn test_items_list() {
 
     let client = TestClient::new(api, state);
 
-    let response = client.get("/items").await;
+    let response = client.get("/items").send().await;
     assert_eq!(response.status(), 200);
 }
