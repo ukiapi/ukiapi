@@ -148,7 +148,7 @@ fn run_dev(host: String, port: u16, workers: usize, reload: bool) {
         ensure_cargo_watch();
 
         let status = Command::new("cargo")
-            .args(["watch", "-x", "run"])
+            .args(["watch", "-x", "run --bin example"])
             .envs(env)
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
@@ -162,7 +162,7 @@ fn run_dev(host: String, port: u16, workers: usize, reload: bool) {
     } else {
         // cargo run (debug)
         let status = Command::new("cargo")
-            .args(["run"])
+            .args(["run", "--bin", "example"])
             .envs(env)
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
@@ -182,7 +182,7 @@ fn run_release(host: String, port: u16, workers: usize) {
     let env = build_env(&host, port, workers);
 
     let status = Command::new("cargo")
-        .args(["run", "--release"])
+        .args(["run", "--release", "--bin", "example"])
         .envs(env)
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
