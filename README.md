@@ -47,7 +47,8 @@ Your API will be running at `http://localhost:3000`, with interactive docs at `h
 ## 📖 Example
 
 ```rust
-use rustapi::{get, post, routes, ValidatedJson, Json, json};
+use rustapi::{get, post, routes, serve, ValidatedJson};
+use rustapi::Json;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use schemars::JsonSchema;

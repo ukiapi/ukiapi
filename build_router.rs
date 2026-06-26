@@ -23,18 +23,18 @@
 
     pub fn layer<F>(mut self, f: F) -> Self
     where
-        F: FnOnce(axum::Router<S>) -> axum::Router<S> + Send + 'static,
+        F: FnOnce(rustapi::Router<S>) -> rustapi::Router<S> + Send + 'static,
     {
         self.layers.push(Box::new(f));
         self
     }
 
     pub fn with_state(self, state: S) -> Self {
-        self.layer(|router| router.layer(axum::Extension(state)))
+        self.layer(|router| router.layer(rustapi::extract::Extension(state)))
     }
 
-    pub fn build_router(self, state: S) -> axum::Router<()> {
-        let mut router = axum::Router::<S>::new();
+    pub fn build_router(self, state: S) -> rustapi::Router<()> {
+        let mut router = rustapi::Router::<S>::new();
 
         for layer_fn in self.layers {
             router = layer_fn(router);
@@ -122,18 +122,18 @@
         let swagger_html = build_swagger_page();
         let redoc_html = build_redoc_page();
 
-        let stateless_docs = axum::Router::new()
+        let stateless_docs = rustapi::Router::new()
             .route(
                 "/docs",
-                axum::routing::get(|| async move { Html(swagger_html) }),
+                rustapi::routing::methods::get(|| async move { rustapi::response::Html(swagger_html) }),
             )
             .route(
                 "/redoc",
-                axum::routing::get(|| async move { Html(redoc_html) }),
+                rustapi::routing::methods::get(|| async move { rustapi::response::Html(redoc_html) }),
             )
             .route(
                 "/openapi.json",
-                axum::routing::get(|| async { Json(openapi_json) }),
+                rustapi::routing::methods::get(|| async { rustapi::response::Json(openapi_json) }),
             );
 
         router.with_state(state).merge(stateless_docs)

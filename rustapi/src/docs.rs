@@ -1,4 +1,6 @@
-use axum::response::{Html, Json};
+use crate::response::{Html, Json};
+use crate::routing::methods;
+use crate::routing::Router;
 use serde_json::{json, Value};
 
 /// Build the Swagger UI HTML page.
@@ -94,21 +96,15 @@ pub fn finalize_openapi_spec(
 }
 
 /// Create a router to serve OpenAPI JSON and documentation UI.
-pub fn docs_router(openapi_json: Value) -> axum::Router {
+pub fn docs_router(openapi_json: Value) -> Router {
     let swagger_html = build_swagger_page();
     let redoc_html = build_redoc_page();
 
-    axum::Router::new()
-        .route(
-            "/docs",
-            axum::routing::get(|| async move { Html(swagger_html) }),
-        )
-        .route(
-            "/redoc",
-            axum::routing::get(|| async move { Html(redoc_html) }),
-        )
+    Router::new()
+        .route("/docs", methods::get(|| async move { Html(swagger_html) }))
+        .route("/redoc", methods::get(|| async move { Html(redoc_html) }))
         .route(
             "/openapi.json",
-            axum::routing::get(|| async { Json(openapi_json) }),
+            methods::get(|| async { Json(openapi_json) }),
         )
 }

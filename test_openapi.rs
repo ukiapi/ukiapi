@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 use rustapi::{get, post, model, json, Value, ValidatedJson};
-use axum::extract::State;
+use rustapi::State;
 use serde::{Deserialize, Serialize};
 
 #[model]

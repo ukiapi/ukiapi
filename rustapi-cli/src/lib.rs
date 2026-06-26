@@ -34,15 +34,13 @@ pub fn run_new(name: String) {
     let mut cargo_toml = fs::read_to_string(&cargo_toml_path).unwrap();
 
     let deps = r#"
-rustapi = { git = "ssh://git@github.com/abundis29/rustapi.git", tag = "v0.1.1" }
-rustapi-macros = { git = "ssh://git@github.com/abundis29/rustapi.git", tag = "v0.1.1" }
-axum = "0.8"
+rustapi = { path = "../../rustapi" }
+rustapi-macros = { path = "../../rustapi-macros" }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 validator = { version = "0.20", features = ["derive"] }
 schemars = "0.8"
-linkme = "0.3"
 "#;
 
     if !cargo_toml.contains("[dependencies]") {
@@ -53,7 +51,8 @@ linkme = "0.3"
 
     // 3. Create boilerplate main.rs
     let main_rs_path = format!("{}/src/main.rs", name);
-    let main_rs_content = r#"use rustapi::{routes, get, post, ValidatedJson, Json, json};
+    let main_rs_content = r#"use rustapi::{routes, ValidatedJson, serve, Json};
+use rustapi::{get, post};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use schemars::JsonSchema;

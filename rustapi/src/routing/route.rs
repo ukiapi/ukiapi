@@ -1,8 +1,10 @@
+use crate::handler::Handler;
 use crate::routing::api::RustAPI;
-use axum::Router;
+use crate::routing::methods;
+use crate::routing::Router;
 use serde_json::Value;
 
-/// A type alias for a boxed closure that adds a route to an axum Router.
+/// A type alias for a boxed closure that adds a route to a Router.
 pub type RouteAdder<S> = Box<dyn FnOnce(Router<S>, &str) -> Router<S> + Send>;
 
 /// Trait for items that can be added to the RustAPI router.
@@ -17,7 +19,7 @@ pub struct Route<S = ()> {
     pub method: &'static str,
     /// The path for this route.
     pub path: String,
-    /// The closure used to add this route to an axum Router.
+    /// The closure used to add this route to a Router.
     pub adder: RouteAdder<S>,
     /// The request schema for OpenAPI documentation.
     pub request_schema: Option<Value>,
@@ -41,21 +43,15 @@ where
 {
     pub(crate) fn new<H, T>(method: &'static str, path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         let adder: RouteAdder<S> = match method {
-            "GET" => Box::new(move |router, path| router.route(path, axum::routing::get(handler))),
-            "POST" => {
-                Box::new(move |router, path| router.route(path, axum::routing::post(handler)))
-            }
-            "PUT" => Box::new(move |router, path| router.route(path, axum::routing::put(handler))),
-            "DELETE" => {
-                Box::new(move |router, path| router.route(path, axum::routing::delete(handler)))
-            }
-            "PATCH" => {
-                Box::new(move |router, path| router.route(path, axum::routing::patch(handler)))
-            }
+            "GET" => Box::new(move |router, path| router.route(path, methods::get(handler))),
+            "POST" => Box::new(move |router, path| router.route(path, methods::post(handler))),
+            "PUT" => Box::new(move |router, path| router.route(path, methods::put(handler))),
+            "DELETE" => Box::new(move |router, path| router.route(path, methods::delete(handler))),
+            "PATCH" => Box::new(move |router, path| router.route(path, methods::patch(handler))),
             _ => unreachable!(),
         };
         Self {
@@ -96,7 +92,7 @@ where
     /// Create a new GET route.
     pub fn get<H, T>(path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         Self::new("GET", path, handler)
@@ -105,7 +101,7 @@ where
     /// Create a new POST route.
     pub fn post<H, T>(path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         Self::new("POST", path, handler)
@@ -114,7 +110,7 @@ where
     /// Create a new PUT route.
     pub fn put<H, T>(path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         Self::new("PUT", path, handler)
@@ -123,7 +119,7 @@ where
     /// Create a new DELETE route.
     pub fn delete<H, T>(path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         Self::new("DELETE", path, handler)
@@ -132,7 +128,7 @@ where
     /// Create a new PATCH route.
     pub fn patch<H, T>(path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         Self::new("PATCH", path, handler)

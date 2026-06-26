@@ -1,13 +1,8 @@
 use crate::models::{ItemCreate, ItemDb, ItemResponse, ListItemsQuery};
 use crate::AppState;
-use axum::extract::State;
-use axum::http::StatusCode;
-use rustapi::{
-    error, get, info, jsonable_encoder, post, APIRouter, BackgroundTasks, FileResponse,
-    HTMLResponse, HTTPException, RedirectResponse, Response, UploadFile, ValidatedJson,
-};
-use std::fs::OpenOptions;
-use std::io::Write;
+use rustapi::http::StatusCode;
+use rustapi::State;
+use rustapi::{error, get, info, post, APIRouter, HTTPException, Response, ValidatedJson};
 
 #[get("/hello")]
 pub async fn hello() -> &'static str {
