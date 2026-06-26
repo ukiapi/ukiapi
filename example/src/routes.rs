@@ -277,4 +277,3 @@ async fn handle_socket(mut socket: WebSocket) {
     }
     info!("WebSocket connection closed.");
 }
-}
