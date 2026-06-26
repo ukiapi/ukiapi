@@ -1,13 +1,13 @@
+use crate::body::Body;
+use crate::extract::Request;
+use crate::response::AxumResponse;
+use crate::routing::Router;
+use crate::tower::ServiceExt;
 use crate::RustAPI;
-use axum::{
-    body::Body,
-    http::{Request, Response},
-};
-use tower::ServiceExt;
 
 /// A simple client for testing RustAPI endpoints.
 pub struct TestClient {
-    router: axum::Router<()>,
+    router: Router<()>,
 }
 
 impl TestClient {
@@ -22,7 +22,7 @@ impl TestClient {
     }
 
     /// Perform a GET request.
-    pub async fn get(&self, uri: &str) -> Response<Body> {
+    pub async fn get(&self, uri: &str) -> AxumResponse {
         let req = Request::builder()
             .method("GET")
             .uri(uri)
@@ -32,7 +32,7 @@ impl TestClient {
     }
 
     /// Perform a POST request with a body.
-    pub async fn post(&self, uri: &str, body: Body) -> Response<Body> {
+    pub async fn post(&self, uri: &str, body: Body) -> AxumResponse {
         let req = Request::builder()
             .method("POST")
             .uri(uri)

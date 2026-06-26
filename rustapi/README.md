@@ -12,7 +12,7 @@ Core library for the RustAPI framework. Provides routing, extractors, and utilit
 - `HTTPException`: A structured way to return HTTP errors with status codes and messages.
   ```rust
   use rustapi::HTTPException;
-  use axum::http::StatusCode;
+  use rustapi::http::StatusCode;
 
   pub async fn handler() -> Result<&'static str, HTTPException> {
       Err(HTTPException::new(StatusCode::BAD_REQUEST, "Invalid input"))
@@ -23,7 +23,7 @@ Core library for the RustAPI framework. Provides routing, extractors, and utilit
 - `Response<T>`: A wrapper to explicitly set status codes for responses.
   ```rust
   use rustapi::Response;
-  use axum::http::StatusCode;
+  use rustapi::http::StatusCode;
 
   pub async fn handler() -> Response<String> {
       Response::new(StatusCode::CREATED, "Item created".to_string())

@@ -1,12 +1,10 @@
 use crate::dependencies::{Dependency, Depends};
+use crate::extract::{FromRequestParts, Request, State};
+use crate::middleware::{self, Next};
 use crate::mount::Mount;
+use crate::response::{HTTPException, IntoResponse};
+use crate::routing::Router;
 use crate::routing::{api::RustAPI, route::Route, Routable, RouterBuilder};
-use axum::{
-    extract::{FromRequestParts, Request, State},
-    middleware::{self, Next},
-    response::IntoResponse,
-    Router,
-};
 use std::sync::Arc;
 
 /// A router for grouping routes with a common prefix and tags.
@@ -110,7 +108,7 @@ where
                             req = Request::from_parts(parts, body);
                             next.run(req).await.into_response()
                         }
-                        Err(err) => err.into_response(),
+                        Err(err) => (err as HTTPException).into_response(),
                     }
                 },
             ))

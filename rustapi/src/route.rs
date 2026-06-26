@@ -1,5 +1,7 @@
 use serde_json::Value;
 use crate::routing::{RouteAdder, RustAPI, Routable};
+use crate::handler::Handler;
+use crate::routing::{methods, Router};
 
 pub struct Route<S = ()> {
     pub method: &'static str,
@@ -23,20 +25,20 @@ where
 {
     pub fn new<H, T>(method: &'static str, path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         let adder: RouteAdder<S> = match method {
-            "GET" => Box::new(move |router, path| router.route(path, axum::routing::get(handler))),
+            "GET" => Box::new(move |router, path| router.route(path, methods::get(handler))),
             "POST" => {
-                Box::new(move |router, path| router.route(path, axum::routing::post(handler)))
+                Box::new(move |router, path| router.route(path, methods::post(handler)))
             }
-            "PUT" => Box::new(move |router, path| router.route(path, axum::routing::put(handler))),
+            "PUT" => Box::new(move |router, path| router.route(path, methods::put(handler))),
             "DELETE" => {
-                Box::new(move |router, path| router.route(path, axum::routing::delete(handler)))
+                Box::new(move |router, path| router.route(path, methods::delete(handler)))
             }
             "PATCH" => {
-                Box::new(move |router, path| router.route(path, axum::routing::patch(handler)))
+                Box::new(move |router, path| router.route(path, methods::patch(handler)))
             }
             _ => unreachable!(),
         };
@@ -73,7 +75,7 @@ where
 
     pub fn get<H, T>(path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         Self::new("GET", path, handler)
@@ -81,7 +83,7 @@ where
 
     pub fn post<H, T>(path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         Self::new("POST", path, handler)
@@ -89,7 +91,7 @@ where
 
     pub fn put<H, T>(path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         Self::new("PUT", path, handler)
@@ -97,7 +99,7 @@ where
 
     pub fn delete<H, T>(path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         Self::new("DELETE", path, handler)
@@ -105,7 +107,7 @@ where
 
     pub fn patch<H, T>(path: &'static str, handler: H) -> Self
     where
-        H: axum::handler::Handler<T, S>,
+        H: Handler<T, S>,
         T: 'static,
     {
         Self::new("PATCH", path, handler)
@@ -118,8 +120,8 @@ impl Route<()> {
         NewS: Clone + Send + Sync + 'static,
     {
         let old_adder = self.adder;
-        let new_adder: RouteAdder<NewS> = Box::new(move |router: axum::Router<NewS>, path| {
-            let stateless_router = axum::Router::<()>::new();
+        let new_adder: RouteAdder<NewS> = Box::new(move |router: Router<NewS>, path| {
+            let stateless_router = Router::<()>::new();
             let built_stateless_router = old_adder(stateless_router, path);
             router.merge(built_stateless_router.with_state(()))
         });

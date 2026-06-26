@@ -1,15 +1,15 @@
 use crate::background_tasks::BackgroundTasks;
 use crate::dependencies::{Dependency, Depends};
 use crate::docs::{docs_router, finalize_openapi_spec, process_openapi_schema};
+use crate::extract::{FromRequestParts, Request, State};
 use crate::lifecycle::LifecycleHandler;
+use crate::middleware::{self, Next};
 use crate::mount::Mount;
+use crate::response::{HTTPException, IntoResponse};
+use crate::routing::Router;
 use crate::routing::{route::Route, Routable, RouterBuilder};
-use axum::{
-    extract::{FromRequestParts, Request, State},
-    middleware::{self, Next},
-    response::IntoResponse,
-    Router,
-};
+use crate::server;
+use crate::static_files::ServeDir;
 use serde_json::{json, Map};
 use std::future::Future;
 use std::sync::Arc;
@@ -116,14 +116,14 @@ where
                             req = Request::from_parts(parts, body);
                             next.run(req).await.into_response()
                         }
-                        Err(err) => err.into_response(),
+                        Err(err) => (err as HTTPException).into_response(),
                     }
                 },
             ))
         })
     }
 
-    pub fn build_router(self, state: S) -> axum::Router<()> {
+    pub fn build_router(self, state: S) -> Router<()> {
         let mut router = Router::<S>::new();
         let mut paths = Map::new();
         let mut components_schemas = Map::new();
@@ -164,10 +164,7 @@ where
         }
 
         for mount in self.mounts {
-            router = router.nest_service(
-                &mount.path,
-                tower_http::services::ServeDir::new(&mount.directory),
-            );
+            router = router.nest_service(&mount.path, ServeDir::new(&mount.directory));
         }
 
         for layer_fn in &self.layers {
@@ -226,7 +223,7 @@ where
 
         let shutdown_state = state.clone();
 
-        axum::serve(listener, app.into_make_service())
+        server::serve(listener, app.into_make_service())
             .with_graceful_shutdown(async move {
                 tokio::signal::ctrl_c()
                     .await

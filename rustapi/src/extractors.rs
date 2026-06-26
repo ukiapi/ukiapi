@@ -1,8 +1,9 @@
-use axum::{
-    extract::{FromRequest, FromRequestParts},
-    http::request::Parts,
-    Json,
-};
+use crate::extract::query::Query as AxumQuery;
+use crate::extract::Request;
+pub use crate::extract::{FromRequest, FromRequestParts};
+use crate::http::request::Parts;
+use crate::http::StatusCode;
+use crate::response::Json;
 use serde_json::{json, Value};
 use validator::Validate;
 
@@ -14,25 +15,24 @@ where
     T: serde::de::DeserializeOwned + Validate + Send + Sync + 'static,
     S: Send + Sync + 'static,
 {
-    type Rejection = (axum::http::StatusCode, Json<Value>);
+    type Rejection = (StatusCode, Json<Value>);
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        let axum::extract::Query(query) =
-            axum::extract::Query::<T>::from_request_parts(parts, state)
-                .await
-                .map_err(|e| {
-                    (
-                        axum::http::StatusCode::UNPROCESSABLE_ENTITY,
-                        Json(json!({
-                            "detail": format!("Invalid query parameters: {}", e),
-                            "errors": null
-                        })),
-                    )
-                })?;
+        let AxumQuery(query) = AxumQuery::<T>::from_request_parts(parts, state)
+            .await
+            .map_err(|e| {
+                (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    Json(json!({
+                        "detail": format!("Invalid query parameters: {}", e),
+                        "errors": null
+                    })),
+                )
+            })?;
 
         query.validate().map_err(|e| {
             (
-                axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+                StatusCode::UNPROCESSABLE_ENTITY,
                 Json(json!({
                     "detail": format!("Validation failed: {}", e),
                 })),
@@ -51,12 +51,12 @@ where
     T: serde::de::DeserializeOwned + Validate + Send + Sync + 'static,
     S: Send + Sync + 'static,
 {
-    type Rejection = (axum::http::StatusCode, Json<Value>);
+    type Rejection = (StatusCode, Json<Value>);
 
-    async fn from_request(req: axum::extract::Request, state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
         let Json(body) = Json::<T>::from_request(req, state).await.map_err(|e| {
             (
-                axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+                StatusCode::UNPROCESSABLE_ENTITY,
                 Json(json!({
                     "detail": format!("Invalid JSON: {}", e),
                 })),
@@ -65,7 +65,7 @@ where
 
         body.validate().map_err(|e| {
             (
-                axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+                StatusCode::UNPROCESSABLE_ENTITY,
                 Json(json!({
                     "detail": format!("Validation failed: {}", e),
                 })),
