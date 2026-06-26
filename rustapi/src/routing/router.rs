@@ -1,13 +1,13 @@
 use crate::dependencies::{Dependency, Depends};
+use crate::mount::Mount;
+use crate::routing::{api::RustAPI, route::Route, Routable, RouterBuilder};
 use axum::{
-    extract::{FromRequestParts, State, Request},
+    extract::{FromRequestParts, Request, State},
     middleware::{self, Next},
     response::IntoResponse,
     Router,
 };
 use std::sync::Arc;
-use crate::mount::Mount;
-use crate::routing::{RouterBuilder, Routable, api::RustAPI, route::Route};
 
 /// A router for grouping routes with a common prefix and tags.
 pub struct APIRouter<S = ()> {

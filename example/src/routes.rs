@@ -3,9 +3,11 @@ use crate::AppState;
 use axum::extract::State;
 use axum::http::StatusCode;
 use rustapi::{
-    get, post, APIRouter, FileResponse, HTMLResponse, HTTPException, RedirectResponse, Response,
-    ValidatedJson, info, error, jsonable_encoder,
+    error, get, info, jsonable_encoder, post, APIRouter, BackgroundTasks, FileResponse,
+    HTMLResponse, HTTPException, RedirectResponse, Response, UploadFile, ValidatedJson,
 };
+use std::fs::OpenOptions;
+use std::io::Write;
 
 #[get("/hello")]
 pub async fn hello() -> &'static str {
@@ -100,11 +102,18 @@ pub async fn trigger_error() -> Result<&'static str, HTTPException> {
     ))
 }
 
-
 #[get("/request-info")]
 pub async fn request_info(req: rustapi::Request) -> String {
-    info!("Accessed /request-info route. Method: {}, Path: {}", req.method(), req.uri().path());
-    format!("Request method: {}, Path: {}", req.method(), req.uri().path())
+    info!(
+        "Accessed /request-info route. Method: {}, Path: {}",
+        req.method(),
+        req.uri().path()
+    );
+    format!(
+        "Request method: {}, Path: {}",
+        req.method(),
+        req.uri().path()
+    )
 }
 
 #[get("/html")]
@@ -120,6 +129,62 @@ pub async fn redirect_example() -> RedirectResponse {
 #[get("/file")]
 pub async fn file_example() -> FileResponse {
     FileResponse::new("Cargo.toml")
+}
+
+#[get("/background")]
+pub async fn background_handler(tasks: BackgroundTasks) -> rustapi::Json<rustapi::Value> {
+    info!("Accessed /background route. Scheduling tasks.");
+    tasks.add_task(async {
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open("tasks.log")
+            .unwrap();
+        writeln!(file, "Task 1 starting...").unwrap();
+        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+        writeln!(file, "Task 1 completed!").unwrap();
+        file.flush().unwrap();
+    });
+
+    tasks.add_task(async {
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open("tasks.log")
+            .unwrap();
+        writeln!(file, "Task 2 starting...").unwrap();
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        writeln!(file, "Task 2 completed!").unwrap();
+        file.flush().unwrap();
+    });
+
+    rustapi::Json(rustapi::json!({
+        "message": "Background tasks scheduled"
+    }))
+}
+
+#[post("/upload")]
+pub async fn upload_handler(file: UploadFile) -> rustapi::Json<rustapi::Value> {
+    let filename = file
+        .filename
+        .clone()
+        .unwrap_or_else(|| "unknown.txt".to_string());
+    info!("Accessed /upload route. Uploading file: {}.", filename);
+    let size = file.content.len();
+
+    // Save the file
+    if let Err(e) = file.save(&filename).await {
+        return rustapi::Json(rustapi::json!({
+            "error": format!("Failed to save file: {}", e)
+        }));
+    }
+
+    rustapi::Json(rustapi::json!({
+        "message": "File uploaded successfully",
+        "filename": filename,
+        "size": size,
+        "content_type": file.content_type
+    }))
 }
 
 pub fn items_router() -> APIRouter<AppState> {

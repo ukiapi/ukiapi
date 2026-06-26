@@ -129,9 +129,15 @@ impl RedirectResponse {
 impl IntoResponse for RedirectResponse {
     fn into_response(self) -> Response {
         match self.status_code {
-            StatusCode::MOVED_PERMANENTLY => axum::response::Redirect::permanent(&self.url).into_response(),
-            StatusCode::TEMPORARY_REDIRECT => axum::response::Redirect::temporary(&self.url).into_response(),
-            StatusCode::PERMANENT_REDIRECT => axum::response::Redirect::permanent(&self.url).into_response(),
+            StatusCode::MOVED_PERMANENTLY => {
+                axum::response::Redirect::permanent(&self.url).into_response()
+            }
+            StatusCode::TEMPORARY_REDIRECT => {
+                axum::response::Redirect::temporary(&self.url).into_response()
+            }
+            StatusCode::PERMANENT_REDIRECT => {
+                axum::response::Redirect::permanent(&self.url).into_response()
+            }
             _ => axum::response::Redirect::to(&self.url).into_response(),
         }
     }
@@ -199,7 +205,8 @@ impl IntoResponse for FileResponse {
 
         headers.insert(
             header::CONTENT_TYPE,
-            header::HeaderValue::from_str(&mime).unwrap_or(header::HeaderValue::from_static("application/octet-stream")),
+            header::HeaderValue::from_str(&mime)
+                .unwrap_or(header::HeaderValue::from_static("application/octet-stream")),
         );
 
         res
@@ -262,7 +269,8 @@ where
         }
         headers.insert(
             header::CONTENT_TYPE,
-            header::HeaderValue::from_str(&self.media_type).unwrap_or(header::HeaderValue::from_static("application/octet-stream")),
+            header::HeaderValue::from_str(&self.media_type)
+                .unwrap_or(header::HeaderValue::from_static("application/octet-stream")),
         );
         res
     }

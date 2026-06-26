@@ -1,10 +1,7 @@
-use axum::{
-    extract::FromRequestParts,
-    http::request::Parts,
-};
-use std::marker::PhantomData;
-use std::future::Future;
 use crate::HTTPException;
+use axum::{extract::FromRequestParts, http::request::Parts};
+use std::future::Future;
+use std::marker::PhantomData;
 
 /// A trait for dependencies that can be resolved from request parts and state.
 ///
@@ -14,7 +11,10 @@ pub trait Dependency<S>: Send + Sync + 'static {
     type Output: Clone + Send + Sync + 'static;
 
     /// Resolve the dependency.
-    fn resolve(parts: &mut Parts, state: &S) -> impl Future<Output = Result<Self::Output, HTTPException>> + Send;
+    fn resolve(
+        parts: &mut Parts,
+        state: &S,
+    ) -> impl Future<Output = Result<Self::Output, HTTPException>> + Send;
 }
 
 /// An extractor that resolves a dependency and caches the result.
@@ -51,7 +51,9 @@ where
         let resolved = D::resolve(parts, state).await?;
 
         // Cache the resolved value in request extensions.
-        parts.extensions.insert(CachedDependency::<D, S>(resolved.clone(), PhantomData));
+        parts
+            .extensions
+            .insert(CachedDependency::<D, S>(resolved.clone(), PhantomData));
 
         Ok(Depends(resolved, PhantomData))
     }

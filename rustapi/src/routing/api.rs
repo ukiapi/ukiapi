@@ -1,18 +1,18 @@
+use crate::background_tasks::BackgroundTasks;
+use crate::dependencies::{Dependency, Depends};
 use crate::docs::{docs_router, finalize_openapi_spec, process_openapi_schema};
 use crate::lifecycle::LifecycleHandler;
 use crate::mount::Mount;
-use crate::dependencies::{Dependency, Depends};
-use crate::background_tasks::BackgroundTasks;
-use serde_json::{json, Map};
-use std::future::Future;
+use crate::routing::{route::Route, Routable, RouterBuilder};
 use axum::{
-    extract::{FromRequestParts, State, Request},
+    extract::{FromRequestParts, Request, State},
     middleware::{self, Next},
     response::IntoResponse,
     Router,
 };
+use serde_json::{json, Map};
+use std::future::Future;
 use std::sync::Arc;
-use crate::routing::{RouterBuilder, Routable, route::Route};
 
 pub struct RustAPI<S = ()> {
     pub(crate) routes: Vec<Route<S>>,
@@ -64,7 +64,8 @@ where
         F: FnOnce(S) -> Fut + Send + 'static,
         Fut: Future<Output = ()> + Send + 'static,
     {
-        self.startup_handlers.push(Box::new(|state| Box::pin(handler(state))));
+        self.startup_handlers
+            .push(Box::new(|state| Box::pin(handler(state))));
         self
     }
 
@@ -73,7 +74,8 @@ where
         F: FnOnce(S) -> Fut + Send + 'static,
         Fut: Future<Output = ()> + Send + 'static,
     {
-        self.shutdown_handlers.push(Box::new(|state| Box::pin(handler(state))));
+        self.shutdown_handlers
+            .push(Box::new(|state| Box::pin(handler(state))));
         self
     }
 
@@ -162,7 +164,10 @@ where
         }
 
         for mount in self.mounts {
-            router = router.nest_service(&mount.path, tower_http::services::ServeDir::new(&mount.directory));
+            router = router.nest_service(
+                &mount.path,
+                tower_http::services::ServeDir::new(&mount.directory),
+            );
         }
 
         for layer_fn in &self.layers {
@@ -170,22 +175,24 @@ where
         }
 
         // Add BackgroundTasks middleware
-        router = router.layer(middleware::from_fn(|mut req: Request, next: Next| async move {
-            let tasks = BackgroundTasks::default();
-            req.extensions_mut().insert(tasks.clone());
-            let response = next.run(req).await;
+        router = router.layer(middleware::from_fn(
+            |mut req: Request, next: Next| async move {
+                let tasks = BackgroundTasks::default();
+                req.extensions_mut().insert(tasks.clone());
+                let response = next.run(req).await;
 
-            let tasks_to_run = tasks.take_tasks();
-            if !tasks_to_run.is_empty() {
-                tokio::spawn(async move {
-                    for task in tasks_to_run {
-                        task.await;
-                    }
-                });
-            }
+                let tasks_to_run = tasks.take_tasks();
+                if !tasks_to_run.is_empty() {
+                    tokio::spawn(async move {
+                        for task in tasks_to_run {
+                            task.await;
+                        }
+                    });
+                }
 
-            response
-        }));
+                response
+            },
+        ));
 
         let openapi_json =
             finalize_openapi_spec(self.title, self.version, paths, components_schemas);
