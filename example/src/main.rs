@@ -34,7 +34,8 @@ async fn main() {
         items_router(),
         trigger_error_route().with_state::<AppState>(),
         background_handler_route().with_state::<AppState>(),
-        upload_handler_route().with_state::<AppState>()
+        upload_handler_route().with_state::<AppState>(),
+        auth_router()
     ]
     .title("Example API")
     .version("1.0.0")

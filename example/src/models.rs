@@ -1,4 +1,5 @@
 use rustapi::model;
+use rustapi::JsonSchema;
 
 // Database Model (Internal)
 #[model]
@@ -32,4 +33,21 @@ pub struct ListItemsQuery {
     pub q: Option<String>,
     #[validate(range(min = 1, max = 100))]
     pub limit: Option<i32>,
+}
+
+#[model]
+pub struct LoginRequest {
+    pub username: String,
+}
+
+#[model]
+pub struct TokenResponse {
+    pub access_token: String,
+    pub token_type: String,
+}
+
+#[derive(Debug, Clone, rustapi::Serialize, rustapi::Deserialize, JsonSchema)]
+pub struct UserClaims {
+    pub sub: String,
+    pub exp: u64,
 }

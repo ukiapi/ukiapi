@@ -1,8 +1,8 @@
 use clap::{Parser, Subcommand};
 use colored::Colorize;
 use rustapi_cli::run_new;
-use std::process::{Command, Stdio};
 use std::env;
+use std::process::{Command, Stdio};
 
 // ─── CLI definition ──────────────────────────────────────────────────────────
 
@@ -147,7 +147,11 @@ fn detect_bin() -> String {
         .args(["metadata", "--no-deps", "--format-version", "1"])
         .output()
         .unwrap_or_else(|e| {
-            eprintln!("{} Failed to run cargo metadata: {}", "error:".red().bold(), e);
+            eprintln!(
+                "{} Failed to run cargo metadata: {}",
+                "error:".red().bold(),
+                e
+            );
             std::process::exit(1);
         });
 
@@ -157,7 +161,11 @@ fn detect_bin() -> String {
     }
 
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap_or_else(|e| {
-        eprintln!("{} Failed to parse cargo metadata: {}", "error:".red().bold(), e);
+        eprintln!(
+            "{} Failed to parse cargo metadata: {}",
+            "error:".red().bold(),
+            e
+        );
         std::process::exit(1);
     });
 
@@ -173,7 +181,10 @@ fn detect_bin() -> String {
     for pkg in packages {
         if let Some(targets) = pkg["targets"].as_array() {
             for target in targets {
-                if target["kind"].as_array().is_some_and(|k| k.iter().any(|v| v == "bin")) {
+                if target["kind"]
+                    .as_array()
+                    .is_some_and(|k| k.iter().any(|v| v == "bin"))
+                {
                     if let Some(name) = target["name"].as_str() {
                         if !cli_bins.contains(&name) {
                             bins.push(name.to_string());

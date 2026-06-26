@@ -1,10 +1,13 @@
-use crate::models::{ItemCreate, ItemDb, ItemResponse, ListItemsQuery};
+use crate::models::{
+    ItemCreate, ItemDb, ItemResponse, ListItemsQuery, LoginRequest, TokenResponse, UserClaims,
+};
 use crate::AppState;
 use rustapi::http::StatusCode;
 use rustapi::State;
 use rustapi::{
-    error, get, info, jsonable_encoder, post, APIRouter, BackgroundTasks, FileResponse,
-    HTMLResponse, HTTPException, RedirectResponse, Response, UploadFile, ValidatedJson,
+    encode_jwt, error, get, info, jsonable_encoder, post, APIRouter, BackgroundTasks, Depends,
+    FileResponse, HTMLResponse, HTTPException, JWTAuth, RedirectResponse, Response, UploadFile,
+    ValidatedJson,
 };
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -13,6 +16,42 @@ use std::io::Write;
 pub async fn hello() -> &'static str {
     info!("Accessed /hello route.");
     "Hello from RustAPI!"
+}
+
+#[post("/login")]
+pub async fn login(
+    ValidatedJson(body): ValidatedJson<LoginRequest>,
+) -> Result<rustapi::Json<TokenResponse>, HTTPException> {
+    info!("Logging in user: {}", body.username);
+
+    let expiration = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+        + 3600;
+
+    let claims = UserClaims {
+        sub: body.username,
+        exp: expiration,
+    };
+
+    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "secret".to_string());
+    let token = encode_jwt(&claims, &secret).map_err(|e| {
+        HTTPException::new(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Failed to generate token: {}", e),
+        )
+    })?;
+
+    Ok(rustapi::Json(TokenResponse {
+        access_token: token,
+        token_type: "Bearer".to_string(),
+    }))
+}
+
+#[get("/me")]
+pub async fn me(Depends(claims, _): Depends<JWTAuth<UserClaims>>) -> rustapi::Json<UserClaims> {
+    rustapi::Json(claims)
 }
 
 #[get("")]
@@ -198,4 +237,10 @@ pub fn items_router() -> APIRouter<AppState> {
         .route(html_example_route().with_state::<AppState>())
         .route(redirect_example_route().with_state::<AppState>())
         .route(file_example_route().with_state::<AppState>())
+}
+
+pub fn auth_router() -> APIRouter<AppState> {
+    APIRouter::new()
+        .route(login_route().with_state::<AppState>())
+        .route(me_route().with_state::<AppState>())
 }
