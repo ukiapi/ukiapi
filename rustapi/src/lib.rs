@@ -27,6 +27,8 @@ pub use background_tasks::BackgroundTasks;
 pub use upload::UploadFile;
 pub use test_client::TestClient;
 pub use routing::{APIRouter, Routable, RouterBuilder, RustAPI, Route};
+pub use log::{info, error};
+pub use env_logger;
 
 /// Start the server. Reads `RUSTAPI_HOST` and `RUSTAPI_PORT` from the
 /// environment (set automatically by `rustapi run` / `rustapi dev`),
@@ -40,6 +42,9 @@ pub use routing::{APIRouter, Routable, RouterBuilder, RustAPI, Route};
 /// }
 /// ```
 pub async fn serve(router: axum::Router<()>) {
+    env_logger::init();
+    info!("Initializing RustAPI server...");
+
     let host = std::env::var("RUSTAPI_HOST").unwrap_or_else(|_| "127.0.0.1".into());
     let port = std::env::var("RUSTAPI_PORT").unwrap_or_else(|_| "3000".into());
     let addr = format!("{}:{}", host, port);
@@ -47,20 +52,21 @@ pub async fn serve(router: axum::Router<()>) {
     let listener = tokio::net::TcpListener::bind(&addr)
         .await
         .unwrap_or_else(|e| {
-            eprintln!("error: could not bind to {}: {}", addr, e);
+            error!("Could not bind to {}: {}", addr, e);
             std::process::exit(1);
         });
 
-    println!("🚀  Listening on  http://{}", addr);
-    println!("📄  Swagger UI    http://{}/docs", addr);
-    println!("📘  ReDoc         http://{}/redoc", addr);
-    println!("🔧  OpenAPI JSON  http://{}/openapi.json", addr);
+    info!("🚀  Listening on  http://{}", addr);
+    info!("📄  Swagger UI    http://{}/docs", addr);
+    info!("📘  ReDoc         http://{}/redoc", addr);
+    info!("🔧  OpenAPI JSON  http://{}/openapi.json", addr);
 
     axum::serve(listener, router.into_make_service())
         .with_graceful_shutdown(async move {
             tokio::signal::ctrl_c()
                 .await
                 .expect("failed to install CTRL+C handler");
+            info!("Received shutdown signal.");
         })
         .await
         .unwrap();
