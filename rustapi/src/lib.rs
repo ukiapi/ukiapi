@@ -26,7 +26,8 @@ pub use dependencies::{Dependency, Depends, Security, security};
 pub use background_tasks::BackgroundTasks;
 pub use upload::UploadFile;
 pub use test_client::TestClient;
-pub use routing::{APIRouter, Routable, RouterBuilder, RustAPI, Route};
+pub use routing::{APIRouter, Routable, RouterBuilder, RustAPI, Route, MiddlewareExt};
+pub use routing::middleware::layers as middleware;
 pub use log::{info, error};
 pub use env_logger;
 
