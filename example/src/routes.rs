@@ -2,7 +2,10 @@ use crate::models::{ItemCreate, ItemDb, ItemResponse, ListItemsQuery};
 use crate::AppState;
 use axum::extract::State;
 use axum::http::StatusCode;
-use rustapi::{get, post, APIRouter, HTTPException, Response, ValidatedJson, info, error};
+use rustapi::{
+    get, post, APIRouter, FileResponse, HTMLResponse, HTTPException, RedirectResponse, Response,
+    ValidatedJson, info, error, jsonable_encoder,
+};
 
 #[get("/hello")]
 pub async fn hello() -> &'static str {
@@ -14,7 +17,7 @@ pub async fn hello() -> &'static str {
 pub async fn list_items(
     State(state): State<AppState>,
     rustapi::Query(query): rustapi::Query<ListItemsQuery>,
-) -> rustapi::Json<Vec<ItemResponse>> {
+) -> rustapi::Json<rustapi::Value> {
     info!("Accessed /items route with query: {:?}", query.q);
     let items = state.items.lock().unwrap();
     let limit = query.limit.unwrap_or(10) as usize;
@@ -36,7 +39,8 @@ pub async fn list_items(
         .collect();
 
     results.truncate(limit);
-    rustapi::Json(results)
+    // Demonstrate jsonable_encoder
+    rustapi::Json(jsonable_encoder(results))
 }
 
 #[get("/{id}")]
@@ -103,6 +107,21 @@ pub async fn request_info(req: rustapi::Request) -> String {
     format!("Request method: {}, Path: {}", req.method(), req.uri().path())
 }
 
+#[get("/html")]
+pub async fn html_example() -> HTMLResponse {
+    HTMLResponse::new("<h1>Hello from RustAPI HTML Response!</h1>")
+}
+
+#[get("/redirect")]
+pub async fn redirect_example() -> RedirectResponse {
+    RedirectResponse::to("/hello")
+}
+
+#[get("/file")]
+pub async fn file_example() -> FileResponse {
+    FileResponse::new("Cargo.toml")
+}
+
 pub fn items_router() -> APIRouter<AppState> {
     APIRouter::new()
         .prefix("/items")
@@ -111,4 +130,7 @@ pub fn items_router() -> APIRouter<AppState> {
         .route(get_item_route())
         .route(create_item_route())
         .route(request_info_route().with_state::<AppState>())
+        .route(html_example_route().with_state::<AppState>())
+        .route(redirect_example_route().with_state::<AppState>())
+        .route(file_example_route().with_state::<AppState>())
 }
