@@ -1,8 +1,13 @@
-use crate::routing::api::RustAPI;
-use crate::routing::route::{Routable, Route};
-
-/// A type alias for a boxed closure that builds an axum Router.
-pub type RouterBuilder<S> = Box<dyn FnOnce(axum::Router<S>) -> axum::Router<S> + Send>;
+use crate::dependencies::{Dependency, Depends};
+use axum::{
+    extract::{FromRequestParts, State, Request},
+    middleware::{self, Next},
+    response::IntoResponse,
+    Router,
+};
+use std::sync::Arc;
+use crate::mount::Mount;
+use crate::routing::{RouterBuilder, Routable, api::RustAPI, route::Route};
 
 /// A router for grouping routes with a common prefix and tags.
 pub struct APIRouter<S = ()> {
@@ -12,6 +17,10 @@ pub struct APIRouter<S = ()> {
     pub tags: Vec<String>,
     /// The list of routes in this router.
     pub routes: Vec<Route<S>>,
+    /// Static file mounts in this router.
+    pub mounts: Vec<Mount<S>>,
+    /// Layers applied to all routes in this router.
+    pub layers: Vec<RouterBuilder<S>>,
 }
 
 impl<S> Default for APIRouter<S>
@@ -33,6 +42,8 @@ where
             prefix: String::new(),
             tags: Vec::new(),
             routes: Vec::new(),
+            mounts: Vec::new(),
+            layers: Vec::new(),
         }
     }
 
@@ -48,6 +59,16 @@ where
         self
     }
 
+    /// Add a static file mount to this router.
+    pub fn mount(mut self, path: &str, directory: &str) -> Self {
+        self.mounts.push(Mount {
+            path: format!("{}{}", self.prefix, path),
+            directory: directory.to_string(),
+            _phantom: std::marker::PhantomData,
+        });
+        self
+    }
+
     /// Add a route or another router to this router.
     pub fn route<R: Routable<S>>(mut self, routable: R) -> Self {
         let mut temp_api = RustAPI::<S>::new();
@@ -57,12 +78,63 @@ where
             route.tags.extend(self.tags.clone());
             self.routes.push(route);
         }
+        for mut mount in temp_api.mounts {
+            mount.path = format!("{}{}", self.prefix, mount.path);
+            self.mounts.push(mount);
+        }
         self
+    }
+
+    /// Add a layer (middleware) to all routes in this router.
+    pub fn layer<F>(mut self, f: F) -> Self
+    where
+        F: Fn(Router<S>) -> Router<S> + Send + Sync + 'static,
+    {
+        self.layers.push(Arc::new(f));
+        self
+    }
+
+    /// Add a dependency to all routes in this router.
+    pub fn dependency<D>(self, state: S) -> Self
+    where
+        D: Dependency<S>,
+    {
+        self.layer(move |router| {
+            let state = state.clone();
+            router.layer(middleware::from_fn_with_state(
+                state,
+                |State(state): State<S>, mut req: Request, next: Next| async move {
+                    let (mut parts, body) = req.into_parts();
+                    match Depends::<D, S>::from_request_parts(&mut parts, &state).await {
+                        Ok(_) => {
+                            req = Request::from_parts(parts, body);
+                            next.run(req).await.into_response()
+                        }
+                        Err(err) => err.into_response(),
+                    }
+                },
+            ))
+        })
     }
 }
 
-impl<S> Routable<S> for APIRouter<S> {
+impl<S> Routable<S> for APIRouter<S>
+where
+    S: Clone + Send + Sync + 'static,
+{
     fn add_to_api(self, api: &mut RustAPI<S>) {
-        api.routes.extend(self.routes);
+        let layers = self.layers;
+        for mut route in self.routes {
+            let old_adder = route.adder;
+            let layers_clone = layers.clone();
+            route.adder = Box::new(move |mut router, path| {
+                for layer_fn in &layers_clone {
+                    router = layer_fn(router);
+                }
+                old_adder(router, path)
+            });
+            api.routes.push(route);
+        }
+        api.mounts.extend(self.mounts);
     }
 }

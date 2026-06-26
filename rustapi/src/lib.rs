@@ -1,9 +1,12 @@
 pub mod docs;
 pub mod extractors;
+pub mod dependencies;
+pub mod background_tasks;
+pub mod upload;
+pub mod test_client;
 pub mod routing;
 pub mod lifecycle;
 pub mod mount;
-pub mod route;
 
 pub use axum::{
     self,
@@ -19,8 +22,11 @@ pub use ts_rs;
 pub use validator::Validate;
 
 pub use extractors::{Query, ValidatedJson};
-pub use routing::{APIRouter, Routable, RouterBuilder, RustAPI};
-pub use route::Route;
+pub use dependencies::{Dependency, Depends, Security, security};
+pub use background_tasks::BackgroundTasks;
+pub use upload::UploadFile;
+pub use test_client::TestClient;
+pub use routing::{APIRouter, Routable, RouterBuilder, RustAPI, Route};
 
 /// Start the server. Reads `RUSTAPI_HOST` and `RUSTAPI_PORT` from the
 /// environment (set automatically by `rustapi run` / `rustapi dev`),
@@ -82,6 +88,7 @@ pub fn schema_for<T: schemars::JsonSchema>() -> serde_json::Value {
 }
 
 /// A structured exception that can be converted into an HTTP response.
+#[derive(Debug)]
 pub struct HTTPException {
     pub status_code: axum::http::StatusCode,
     pub detail: String,
@@ -96,6 +103,14 @@ impl HTTPException {
         }
     }
 }
+
+impl std::fmt::Display for HTTPException {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "HTTPException {}: {}", self.status_code, self.detail)
+    }
+}
+
+impl std::error::Error for HTTPException {}
 
 impl IntoResponse for HTTPException {
     fn into_response(self) -> axum::response::Response {
