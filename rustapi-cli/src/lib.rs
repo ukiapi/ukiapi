@@ -53,9 +53,8 @@ linkme = "0.3"
 
     // 3. Create boilerplate main.rs
     let main_rs_path = format!("{}/src/main.rs", name);
-    let main_rs_content = r#"use rustapi::{routes, get, post, ValidatedJson};
+    let main_rs_content = r#"use rustapi::{routes, get, post, ValidatedJson, Json, json};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
 use validator::Validate;
 use schemars::JsonSchema;
 
@@ -74,7 +73,7 @@ pub async fn hello() -> &'static str {
 }
 
 #[post("/greet")]
-pub async fn greet(ValidatedJson(payload): ValidatedJson<HelloRequest>) -> Json<Value> {
+pub async fn greet(ValidatedJson(payload): ValidatedJson<HelloRequest>) -> Json<serde_json::Value> {
     Json(json!({ "message": format!("Hello, {}!", payload.name) }))
 }
 
