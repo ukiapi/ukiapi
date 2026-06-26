@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.2
+
+### Fixed
+- Export missing `responses` and `utils` modules from rustapi crate
+- Fix example imports for `HTMLResponse`, `RedirectResponse`, `FileResponse`, `BackgroundTasks`, `UploadFile`, and `jsonable_encoder`
+
 ## v0.1.1
 
 ### Fixed
