@@ -8,3 +8,10 @@ repos:
         files: \.(rs)$
         always_run: false
         pass_filenames: false
+      - id: test-example
+        name: Test Example Project
+        entry: bash -c 'cd example && cargo test'
+        language: system
+        files: ^example/src/.*
+        always_run: true
+        pass_filenames: false
