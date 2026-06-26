@@ -34,8 +34,8 @@ pub fn run_new(name: String) {
     let mut cargo_toml = fs::read_to_string(&cargo_toml_path).unwrap();
 
     let deps = r#"
-rustapi = { git = "ssh://git@github.com/abundis29/rustapi.git", tag = "v0.1.0" }
-rustapi-macros = { git = "ssh://git@github.com/abundis29/rustapi.git", tag = "v0.1.0" }
+rustapi = { git = "ssh://git@github.com/abundis29/rustapi.git", tag = "v0.1.1" }
+rustapi-macros = { git = "ssh://git@github.com/abundis29/rustapi.git", tag = "v0.1.1" }
 axum = "0.8"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
@@ -53,9 +53,7 @@ linkme = "0.3"
 
     // 3. Create boilerplate main.rs
     let main_rs_path = format!("{}/src/main.rs", name);
-    let main_rs_content = r#"use rustapi::{routes, ValidatedJson, serve};
-use rustapi::{get, post};
-use axum::Json;
+    let main_rs_content = r#"use rustapi::{routes, get, post, ValidatedJson};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use validator::Validate;
@@ -84,12 +82,12 @@ pub async fn greet(ValidatedJson(payload): ValidatedJson<HelloRequest>) -> Json<
 async fn main() {
     let state = AppState {};
 
-    let app = routes![AppState,
-        hello(),
-        greet()
-    ].build_router(state);
-
-    serve(app).await;
+    routes![AppState,
+        hello_route().with_state::<AppState>(),
+        greet_route().with_state::<AppState>()
+    ]
+    .serve(state)
+    .await;
 }
 "#;
     fs::write(&main_rs_path, main_rs_content).unwrap();
