@@ -2,10 +2,11 @@ use crate::models::{ItemCreate, ItemDb, ItemResponse, ListItemsQuery};
 use crate::AppState;
 use axum::extract::State;
 use axum::http::StatusCode;
-use rustapi::{get, post, APIRouter, HTTPException, Response, ValidatedJson};
+use rustapi::{get, post, APIRouter, HTTPException, Response, ValidatedJson, info, error};
 
 #[get("/hello")]
 pub async fn hello() -> &'static str {
+    info!("Accessed /hello route.");
     "Hello from RustAPI!"
 }
 
@@ -14,6 +15,7 @@ pub async fn list_items(
     State(state): State<AppState>,
     rustapi::Query(query): rustapi::Query<ListItemsQuery>,
 ) -> rustapi::Json<Vec<ItemResponse>> {
+    info!("Accessed /items route with query: {:?}", query.q);
     let items = state.items.lock().unwrap();
     let limit = query.limit.unwrap_or(10) as usize;
 
@@ -42,8 +44,10 @@ pub async fn get_item(
     State(state): State<AppState>,
     rustapi::Path(id): rustapi::Path<i32>,
 ) -> Result<rustapi::Json<ItemResponse>, HTTPException> {
+    info!("Accessed /items/{} route.", id);
     let items = state.items.lock().unwrap();
     let item = items.iter().find(|i| i.id == id).ok_or_else(|| {
+        error!("Item {} not found.", id);
         HTTPException::new(StatusCode::NOT_FOUND, format!("Item {} not found", id))
     })?;
 
@@ -59,6 +63,7 @@ pub async fn create_item(
     State(state): State<AppState>,
     ValidatedJson(body): ValidatedJson<ItemCreate>,
 ) -> Response<rustapi::Json<ItemResponse>> {
+    info!("Accessed /items route. Creating item: {}.", body.name);
     let mut items = state.items.lock().unwrap();
     let next_id = items.len() as i32 + 1;
 
@@ -84,6 +89,7 @@ pub async fn create_item(
 
 #[get("/error")]
 pub async fn trigger_error() -> Result<&'static str, HTTPException> {
+    error!("Accessed /error route. Triggering deliberate error.");
     Err(HTTPException::new(
         StatusCode::BAD_REQUEST,
         "This is a deliberate error",
@@ -93,6 +99,7 @@ pub async fn trigger_error() -> Result<&'static str, HTTPException> {
 
 #[get("/request-info")]
 pub async fn request_info(req: rustapi::Request) -> String {
+    info!("Accessed /request-info route. Method: {}, Path: {}", req.method(), req.uri().path());
     format!("Request method: {}, Path: {}", req.method(), req.uri().path())
 }
 

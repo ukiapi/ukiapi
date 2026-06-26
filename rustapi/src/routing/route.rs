@@ -46,16 +46,10 @@ where
     {
         let adder: RouteAdder<S> = match method {
             "GET" => Box::new(move |router, path| router.route(path, axum::routing::get(handler))),
-            "POST" => {
-                Box::new(move |router, path| router.route(path, axum::routing::post(handler)))
-            }
+            "POST" => Box::new(move |router, path| router.route(path, axum::routing::post(handler))),
             "PUT" => Box::new(move |router, path| router.route(path, axum::routing::put(handler))),
-            "DELETE" => {
-                Box::new(move |router, path| router.route(path, axum::routing::delete(handler)))
-            }
-            "PATCH" => {
-                Box::new(move |router, path| router.route(path, axum::routing::patch(handler)))
-            }
+            "DELETE" => Box::new(move |router, path| router.route(path, axum::routing::delete(handler))),
+            "PATCH" => Box::new(move |router, path| router.route(path, axum::routing::patch(handler))),
             _ => unreachable!(),
         };
         Self {
