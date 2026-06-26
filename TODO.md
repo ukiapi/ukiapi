@@ -14,6 +14,6 @@
 [x] Provide a unified `Request` object for comprehensive access to raw request details.
 [] Expose `HTTPConnection`-like details (client/server addresses, etc.) for granular connection access.
 [x] Implement a unified `Response` class for explicit control over response types and headers.
-[] Implement custom response classes (e.g., File, HTML, Redirect, Streaming) for specialized response types.
-[] Implement data encoding utilities (similar to FastAPI's `jsonable_encoder`) for consistent JSON serialization.
+[x] Implement custom response classes (e.g., File, HTML, Redirect, Streaming) for specialized response types.
+[x] Implement data encoding utilities (similar to FastAPI's `jsonable_encoder`) for consistent JSON serialization.
 [x] Add a `StaticFiles`-like handler for serving static assets.

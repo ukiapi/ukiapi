@@ -7,6 +7,8 @@ pub mod test_client;
 pub mod routing;
 pub mod lifecycle;
 pub mod mount;
+pub mod responses;
+pub mod utils;
 
 pub use axum::{
     self,
@@ -30,17 +32,14 @@ pub use routing::{APIRouter, Routable, RouterBuilder, RustAPI, Route};
 pub use log::{info, error};
 pub use env_logger;
 
+pub use responses::{
+    FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, StreamingResponse,
+};
+pub use utils::jsonable_encoder;
+
 /// Start the server. Reads `RUSTAPI_HOST` and `RUSTAPI_PORT` from the
 /// environment (set automatically by `rustapi run` / `rustapi dev`),
 /// falling back to `127.0.0.1:3000`.
-///
-/// ```rust,no_run
-/// #[tokio::main]
-/// async fn main() {
-///     // let app = rustapi::routes![AppState, ...].build_router(state);
-///     // rustapi::serve(app).await;
-/// }
-/// ```
 pub async fn serve(router: axum::Router<()>) {
     env_logger::init();
     info!("Initializing RustAPI server...");
