@@ -2,8 +2,9 @@ use axum::middleware::Next;
 use axum::response::IntoResponse;
 use example::routes::*;
 use example::AppState;
-use rustapi::middleware::CorsLayer;
-use rustapi::{MiddlewareExt, Request};
+use rustapi::routing::middleware::layers::CorsLayer;
+use rustapi::routing::middleware::MiddlewareExt;
+use rustapi::Request;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
