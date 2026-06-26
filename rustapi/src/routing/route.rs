@@ -52,6 +52,7 @@ where
             "PUT" => Box::new(move |router, path| router.route(path, methods::put(handler))),
             "DELETE" => Box::new(move |router, path| router.route(path, methods::delete(handler))),
             "PATCH" => Box::new(move |router, path| router.route(path, methods::patch(handler))),
+            "ANY" => Box::new(move |router, path| router.route(path, methods::any(handler))),
             _ => unreachable!(),
         };
         Self {
@@ -132,6 +133,15 @@ where
         T: 'static,
     {
         Self::new("PATCH", path, handler)
+    }
+
+    /// Create a new WebSocket route (uses ANY method).
+    pub fn websocket<H, T>(path: &'static str, handler: H) -> Self
+    where
+        H: Handler<T, S>,
+        T: 'static,
+    {
+        Self::new("ANY", path, handler)
     }
 }
 

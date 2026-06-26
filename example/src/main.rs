@@ -35,7 +35,8 @@ async fn main() {
         trigger_error_route().with_state::<AppState>(),
         background_handler_route().with_state::<AppState>(),
         upload_handler_route().with_state::<AppState>(),
-        auth_router()
+        auth_router(),
+        ws_echo_route().with_state::<AppState>()
     ]
     .title("Example API")
     .version("1.0.0")

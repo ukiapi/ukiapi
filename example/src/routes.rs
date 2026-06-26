@@ -9,6 +9,7 @@ use rustapi::{
     FileResponse, HTMLResponse, HTTPException, JWTAuth, RedirectResponse, Response, UploadFile,
     ValidatedJson,
 };
+use rustapi::{websocket, Message, WebSocket, WebSocketUpgrade};
 use std::fs::OpenOptions;
 use std::io::Write;
 
@@ -243,4 +244,36 @@ pub fn auth_router() -> APIRouter<AppState> {
     APIRouter::new()
         .route(login_route().with_state::<AppState>())
         .route(me_route().with_state::<AppState>())
+}
+
+#[websocket("/ws")]
+pub async fn ws_echo(ws: WebSocketUpgrade) -> rustapi::response::AxumResponse {
+    info!("New WebSocket connection request.");
+    ws.on_upgrade(handle_socket)
+}
+
+async fn handle_socket(mut socket: WebSocket) {
+    info!("WebSocket connection established.");
+    while let Some(msg) = socket.recv().await {
+        if let Ok(msg) = msg {
+            match msg {
+                Message::Text(text) => {
+                    info!("Received WebSocket message: {}", text);
+                    if socket.send(Message::Text(text)).await.is_err() {
+                        break;
+                    }
+                }
+                Message::Binary(bin) => {
+                    if socket.send(Message::Binary(bin)).await.is_err() {
+                        break;
+                    }
+                }
+                Message::Close(_) => break,
+                _ => {}
+            }
+        } else {
+            break;
+        }
+    }
+    info!("WebSocket connection closed.");
 }

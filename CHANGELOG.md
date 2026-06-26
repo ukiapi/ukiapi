@@ -7,6 +7,8 @@
 - Fix example imports for `HTMLResponse`, `RedirectResponse`, `FileResponse`, `BackgroundTasks`, `UploadFile`, and `jsonable_encoder`
 
 ## v0.1.1
+n### Added
+- Integrate WebSockets support with `#[websocket]` macro and `WebSocketUpgrade` extractor
 
 ### Fixed
 - Auto-detect binary name in dev/run commands instead of hardcoding `example`

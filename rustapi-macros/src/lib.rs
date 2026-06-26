@@ -151,3 +151,9 @@ pub fn delete(args: TokenStream, input: TokenStream) -> TokenStream {
 pub fn patch(args: TokenStream, input: TokenStream) -> TokenStream {
     route_macro(args, input, "patch")
 }
+
+/// Define a WebSocket endpoint.
+#[proc_macro_attribute]
+pub fn websocket(args: TokenStream, input: TokenStream) -> TokenStream {
+    route_macro(args, input, "websocket")
+}

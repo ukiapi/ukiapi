@@ -1,7 +1,7 @@
 [x] Add automated code formatting (Rustfmt) and linting (Clippy) on commit using pre-commit hooks.
 [x] Implement a more explicit/flexible Dependency Injection system (similar to FastAPI's `Depends`).
 [x] Add support for declarative Background Tasks (similar to FastAPI's `BackgroundTasks`).
-[] Integrate WebSockets support.
+[x] Integrate WebSockets support.
 [x] Implement Startup and Shutdown event handlers for application lifecycle management.
 [] Develop integrated Authentication and Authorization helpers (e.g., JWT, OAuth2).
 [x] Create a testing client or utilities for easier API endpoint testing.
