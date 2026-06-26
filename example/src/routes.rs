@@ -66,7 +66,8 @@ pub async fn create_item(
         id: next_id,
         name: body.name.clone(),
         price: body.price,
-        internal_secret: "secret123".to_string(),
+        internal_secret: std::env::var("INTERNAL_SECRET")
+            .unwrap_or_else(|_| "development_secret".to_string()),
     };
 
     items.push(db_item.clone());
