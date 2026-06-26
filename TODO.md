@@ -12,7 +12,7 @@
 12: [x] Integrate a declarative Security dependency injection mechanism (similar to FastAPI's `Security()`).
 13: [x] Create an `APIRouter`-like class for modular API organization and route prefixing.
 14: [x] Provide a unified `Request` object for comprehensive access to raw request details.
-15: [] Expose `HTTPConnection`-like details (client/server addresses, etc.) for granular connection access.
+15: [x] Expose `HTTPConnection`-like details (client/server addresses, etc.) for granular connection access.
 16: [x] Implement a unified `Response` class for explicit control over response types and headers.
 17: [x] Implement custom response classes (e.g., File, HTML, Redirect, Streaming) for specialized response types.
 18: [x] Implement data encoding utilities (similar to FastAPI's `jsonable_encoder`) for consistent JSON serialization.
