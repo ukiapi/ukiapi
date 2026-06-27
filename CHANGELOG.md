@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.5
+
+### Added
+- Implement compile-time zero-boilerplate route autodiscovery and merging
+- Add integrated authentication and authorization helpers with JWT-based custom claim extraction
+- Expose `HTTPConnection` details for granular connection access (client IP, headers, method, URI)
+- Full integration of WebSockets support with `#[websocket]` macro and `WebSocketUpgrade` extractor
+
+### Fixed
+- Fix path traversal vulnerability in `UploadFile` extraction
+- Downgrade `simple_asn1` and `time` dependencies for `rustc 1.86.0` compatibility
+
 ## v0.1.2
 
 ### Fixed
