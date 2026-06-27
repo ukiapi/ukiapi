@@ -196,6 +196,25 @@ where
         router.with_state(state).merge(docs_router(openapi_json))
     }
 
+    pub fn autodiscover(mut self) -> Self {
+        for entry in ::inventory::iter::<crate::routing::autodiscover::DefaultRoute> {
+            let route_stateless = (entry.route_fn)();
+            let route_stateful = route_stateless.with_state::<S>();
+            self = self.route(route_stateful);
+        }
+        self
+    }
+
+    pub fn autodiscover_with<R>(mut self) -> Self
+    where
+        R: crate::routing::autodiscover::RegistryEntry<S> + ::inventory::Collect + 'static,
+    {
+        for entry in ::inventory::iter::<R> {
+            self = self.route(entry.get_route());
+        }
+        self
+    }
+
     pub async fn serve(mut self, state: S) {
         let host = std::env::var("RUSTAPI_HOST").unwrap_or_else(|_| "127.0.0.1".into());
         let port = std::env::var("RUSTAPI_PORT").unwrap_or_else(|_| "3000".into());
@@ -223,18 +242,21 @@ where
 
         let shutdown_state = state.clone();
 
-        server::serve(listener, app.into_make_service_with_connect_info::<std::net::SocketAddr>())
-            .with_graceful_shutdown(async move {
-                tokio::signal::ctrl_c()
-                    .await
-                    .expect("failed to install CTRL+C handler");
+        server::serve(
+            listener,
+            app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+        )
+        .with_graceful_shutdown(async move {
+            tokio::signal::ctrl_c()
+                .await
+                .expect("failed to install CTRL+C handler");
 
-                for handler in shutdown_handlers {
-                    handler(shutdown_state.clone()).await;
-                }
-            })
-            .await
-            .unwrap();
+            for handler in shutdown_handlers {
+                handler(shutdown_state.clone()).await;
+            }
+        })
+        .await
+        .unwrap();
     }
 }
 

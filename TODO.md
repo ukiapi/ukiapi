@@ -17,3 +17,8 @@
 17: [x] Implement custom response classes (e.g., File, HTML, Redirect, Streaming) for specialized response types.
 18: [x] Implement data encoding utilities (similar to FastAPI's `jsonable_encoder`) for consistent JSON serialization.
 19: [x] Add a `StaticFiles`-like handler for serving static assets.
+20: [ ] Implement compile-time Zero-Boilerplate Route Autodiscovery and merging.
+21: [ ] Design request-scoped Dependency Injection (DI) with yield-like teardown/cleanup hooks.
+22: [ ] Build declarative OAuth2 Security extractors with auto-populated OpenAPI scope/security definitions.
+23: [ ] Add support for dynamic response projection (runtime Pydantic-like field include/exclude).
+24: [ ] Create a developer terminal dashboard (TUI) or web console in `rustapi-cli` for live API metrics.

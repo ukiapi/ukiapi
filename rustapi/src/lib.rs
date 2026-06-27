@@ -1,7 +1,7 @@
 pub mod auth;
 pub mod background_tasks;
-pub mod connection;
 pub mod body;
+pub mod connection;
 pub mod dependencies;
 pub mod docs;
 pub mod extract;
@@ -23,13 +23,14 @@ pub mod utils;
 pub mod ws;
 
 pub use axum;
+pub use inventory;
 pub use rustapi_macros::{delete, get, model, patch, post, put, websocket};
-pub use ws::{Message, WebSocket, WebSocketUpgrade};
 pub use schemars::JsonSchema;
 pub use serde::{Deserialize, Serialize};
 pub use serde_json::{json, Value};
 pub use ts_rs;
 pub use validator::Validate;
+pub use ws::{Message, WebSocket, WebSocketUpgrade};
 
 pub use auth::{decode_jwt, encode_jwt, HTTPBearer, JWTAuth, OAuth2PasswordBearer};
 pub use background_tasks::BackgroundTasks;
@@ -40,11 +41,13 @@ pub use extract::{Path, Request, State};
 pub use extractors::{Query, ValidatedJson};
 pub use log::{error, info};
 pub use response::{HTTPException, Json, Response};
-pub use responses::{FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, StreamingResponse};
-pub use utils::jsonable_encoder;
+pub use responses::{
+    FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, StreamingResponse,
+};
 pub use routing::{APIRouter, Routable, Route, Router, RouterBuilder, RustAPI};
 pub use test_client::TestClient;
 pub use upload::UploadFile;
+pub use utils::jsonable_encoder;
 
 /// Start the server. Reads `RUSTAPI_HOST` and `RUSTAPI_PORT` from the
 /// environment (set automatically by `rustapi run` / `rustapi dev`),
@@ -77,15 +80,18 @@ pub async fn serve(router: Router<()>) {
     info!("📘  ReDoc         http://{}/redoc", addr);
     info!("🔧  OpenAPI JSON  http://{}/openapi.json", addr);
 
-    crate::server::serve(listener, router.into_make_service_with_connect_info::<std::net::SocketAddr>())
-        .with_graceful_shutdown(async move {
-            tokio::signal::ctrl_c()
-                .await
-                .expect("failed to install CTRL+C handler");
-            info!("Received shutdown signal.");
-        })
-        .await
-        .unwrap();
+    crate::server::serve(
+        listener,
+        router.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .with_graceful_shutdown(async move {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install CTRL+C handler");
+        info!("Received shutdown signal.");
+    })
+    .await
+    .unwrap();
 }
 
 /// A macro to initialize a `RustAPI` instance with a set of routes.

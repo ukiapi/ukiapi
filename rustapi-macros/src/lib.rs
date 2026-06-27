@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, GenericArgument, ItemFn, LitStr, PathArguments, Type};
+use syn::{parse_macro_input, GenericArgument, ItemFn, PathArguments, Type};
 
 fn extractor_inner_type(ty: &Type) -> Option<(String, &Type)> {
     if let Type::Path(type_path) = ty {
@@ -18,8 +18,39 @@ fn extractor_inner_type(ty: &Type) -> Option<(String, &Type)> {
     None
 }
 
+struct RouteArgs {
+    path: syn::LitStr,
+    registry: Option<syn::Path>,
+}
+
+impl syn::parse::Parse for RouteArgs {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let path: syn::LitStr = input.parse()?;
+        let mut registry = None;
+        if input.peek(syn::Token![,]) {
+            input.parse::<syn::Token![,]>()?;
+            while !input.is_empty() {
+                let ident: syn::Ident = input.parse()?;
+                input.parse::<syn::Token![=]>()?;
+                if ident == "registry" {
+                    registry = Some(input.parse()?);
+                } else {
+                    let _: syn::Expr = input.parse()?;
+                }
+                if input.peek(syn::Token![,]) {
+                    input.parse::<syn::Token![,]>()?;
+                } else {
+                    break;
+                }
+            }
+        }
+        Ok(RouteArgs { path, registry })
+    }
+}
+
 fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStream {
-    let path = parse_macro_input!(args as LitStr);
+    let route_args = parse_macro_input!(args as RouteArgs);
+    let path_lit = &route_args.path;
     let func = parse_macro_input!(input as ItemFn);
     let fn_name = &func.sig.ident;
     let route_fn_name = syn::Ident::new(&format!("{}_route", fn_name), fn_name.span());
@@ -93,6 +124,18 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
         _ => None,
     };
 
+    let registry_submit = if let Some(reg) = &route_args.registry {
+        if state_ty.to_string() == "()" {
+            quote! { ::rustapi::submit_route!(#route_fn_name, #reg, stateless); }
+        } else {
+            quote! { ::rustapi::submit_route!(#route_fn_name, #reg, stateful); }
+        }
+    } else if state_ty.to_string() == "()" {
+        quote! { ::rustapi::submit_route!(#route_fn_name); }
+    } else {
+        quote! {}
+    };
+
     let expanded = quote! {
         #(#attrs)*
         #vis #sig #block
@@ -100,11 +143,13 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
 
         #[doc(hidden)]
         pub fn #route_fn_name() -> ::rustapi::Route<#state_ty> {
-            ::rustapi::Route::#method_ident(#path, #fn_name)
+            ::rustapi::Route::#method_ident(#path_lit, #fn_name)
                 #req_schema
                 #res_schema
                 #query_schema
         }
+
+        #registry_submit
     };
 
     expanded.into()

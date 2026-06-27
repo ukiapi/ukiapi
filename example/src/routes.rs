@@ -13,13 +13,16 @@ use rustapi::{websocket, Message, WebSocket, WebSocketUpgrade};
 use std::fs::OpenOptions;
 use std::io::Write;
 
+rustapi::declare_registry!(crate::AppState, ItemsRoute);
+rustapi::declare_registry!(crate::AppState, AuthRoute);
+
 #[get("/hello")]
 pub async fn hello() -> &'static str {
     info!("Accessed /hello route.");
     "Hello from RustAPI!"
 }
 
-#[post("/login")]
+#[post("/login", registry = AuthRoute)]
 pub async fn login(
     ValidatedJson(body): ValidatedJson<LoginRequest>,
 ) -> Result<rustapi::Json<TokenResponse>, HTTPException> {
@@ -50,12 +53,12 @@ pub async fn login(
     }))
 }
 
-#[get("/me")]
+#[get("/me", registry = AuthRoute)]
 pub async fn me(Depends(claims, _): Depends<JWTAuth<UserClaims>>) -> rustapi::Json<UserClaims> {
     rustapi::Json(claims)
 }
 
-#[get("")]
+#[get("", registry = ItemsRoute)]
 pub async fn list_items(
     State(state): State<AppState>,
     rustapi::Query(query): rustapi::Query<ListItemsQuery>,
@@ -85,7 +88,7 @@ pub async fn list_items(
     rustapi::Json(jsonable_encoder(results))
 }
 
-#[get("/{id}")]
+#[get("/{id}", registry = ItemsRoute)]
 pub async fn get_item(
     State(state): State<AppState>,
     rustapi::Path(id): rustapi::Path<i32>,
@@ -104,7 +107,7 @@ pub async fn get_item(
     }))
 }
 
-#[post("")]
+#[post("", registry = ItemsRoute)]
 pub async fn create_item(
     State(state): State<AppState>,
     ValidatedJson(body): ValidatedJson<ItemCreate>,
@@ -142,7 +145,7 @@ pub async fn trigger_error() -> Result<&'static str, HTTPException> {
     ))
 }
 
-#[get("/request-info")]
+#[get("/request-info", registry = ItemsRoute)]
 pub async fn request_info(req: rustapi::Request) -> String {
     info!(
         "Accessed /request-info route. Method: {}, Path: {}",
@@ -156,17 +159,17 @@ pub async fn request_info(req: rustapi::Request) -> String {
     )
 }
 
-#[get("/html")]
+#[get("/html", registry = ItemsRoute)]
 pub async fn html_example() -> HTMLResponse {
     HTMLResponse::new("<h1>Hello from RustAPI HTML Response!</h1>")
 }
 
-#[get("/redirect")]
+#[get("/redirect", registry = ItemsRoute)]
 pub async fn redirect_example() -> RedirectResponse {
     RedirectResponse::to("/hello")
 }
 
-#[get("/file")]
+#[get("/file", registry = ItemsRoute)]
 pub async fn file_example() -> FileResponse {
     FileResponse::new("Cargo.toml")
 }
@@ -231,19 +234,11 @@ pub fn items_router() -> APIRouter<AppState> {
     APIRouter::new()
         .prefix("/items")
         .tag("items")
-        .route(list_items_route())
-        .route(get_item_route())
-        .route(create_item_route())
-        .route(request_info_route().with_state::<AppState>())
-        .route(html_example_route().with_state::<AppState>())
-        .route(redirect_example_route().with_state::<AppState>())
-        .route(file_example_route().with_state::<AppState>())
+        .autodiscover_with::<ItemsRoute>()
 }
 
 pub fn auth_router() -> APIRouter<AppState> {
-    APIRouter::new()
-        .route(login_route().with_state::<AppState>())
-        .route(me_route().with_state::<AppState>())
+    APIRouter::new().autodiscover_with::<AuthRoute>()
 }
 
 #[websocket("/ws")]

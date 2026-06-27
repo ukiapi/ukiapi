@@ -114,6 +114,25 @@ where
             ))
         })
     }
+
+    pub fn autodiscover(mut self) -> Self {
+        for entry in ::inventory::iter::<crate::routing::autodiscover::DefaultRoute> {
+            let route_stateless = (entry.route_fn)();
+            let route_stateful = route_stateless.with_state::<S>();
+            self = self.route(route_stateful);
+        }
+        self
+    }
+
+    pub fn autodiscover_with<R>(mut self) -> Self
+    where
+        R: crate::routing::autodiscover::RegistryEntry<S> + ::inventory::Collect + 'static,
+    {
+        for entry in ::inventory::iter::<R> {
+            self = self.route(entry.get_route());
+        }
+        self
+    }
 }
 
 impl<S> Routable<S> for APIRouter<S>
