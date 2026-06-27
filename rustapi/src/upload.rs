@@ -39,7 +39,10 @@ where
                 format!("Multipart field error: {}", e),
             )
         })? {
-            let filename = field.file_name().map(|s| s.to_string());
+            let filename = field.file_name().map(|s| {
+                let s = s.replace('\\', "/");
+                s.rsplit('/').next().unwrap_or(&s).to_string()
+            });
             let content_type = field.content_type().map(|s| s.to_string());
             let content = field.bytes().await.map_err(|e| {
                 HTTPException::new(
