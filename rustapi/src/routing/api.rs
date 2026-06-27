@@ -223,7 +223,7 @@ where
 
         let shutdown_state = state.clone();
 
-        server::serve(listener, app.into_make_service())
+        server::serve(listener, app.into_make_service_with_connect_info::<std::net::SocketAddr>())
             .with_graceful_shutdown(async move {
                 tokio::signal::ctrl_c()
                     .await

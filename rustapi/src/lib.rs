@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod background_tasks;
+pub mod connection;
 pub mod body;
 pub mod dependencies;
 pub mod docs;
@@ -32,6 +33,7 @@ pub use validator::Validate;
 
 pub use auth::{decode_jwt, encode_jwt, HTTPBearer, JWTAuth, OAuth2PasswordBearer};
 pub use background_tasks::BackgroundTasks;
+pub use connection::HTTPConnection;
 pub use dependencies::{security, Dependency, Depends, Security};
 pub use env_logger;
 pub use extract::{Path, Request, State};
@@ -75,7 +77,7 @@ pub async fn serve(router: Router<()>) {
     info!("📘  ReDoc         http://{}/redoc", addr);
     info!("🔧  OpenAPI JSON  http://{}/openapi.json", addr);
 
-    crate::server::serve(listener, router.into_make_service())
+    crate::server::serve(listener, router.into_make_service_with_connect_info::<std::net::SocketAddr>())
         .with_graceful_shutdown(async move {
             tokio::signal::ctrl_c()
                 .await
