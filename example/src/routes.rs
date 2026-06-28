@@ -39,7 +39,12 @@ pub async fn login(
         exp: expiration,
     };
 
-    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "secret".to_string());
+    let secret = std::env::var("JWT_SECRET").map_err(|_| {
+        HTTPException::new(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "JWT_SECRET environment variable is not set",
+        )
+    })?;
     let token = encode_jwt(&claims, &secret).map_err(|e| {
         HTTPException::new(
             StatusCode::INTERNAL_SERVER_ERROR,

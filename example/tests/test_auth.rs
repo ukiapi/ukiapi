@@ -7,6 +7,7 @@ use std::sync::{Arc, Mutex};
 
 #[tokio::test]
 async fn test_auth_flow() {
+    std::env::set_var("JWT_SECRET", "test_secret");
     let state = AppState {
         items: Arc::new(Mutex::new(Vec::new())),
     };
@@ -45,6 +46,7 @@ async fn test_auth_flow() {
 
 #[tokio::test]
 async fn test_auth_invalid_token() {
+    std::env::set_var("JWT_SECRET", "test_secret");
     let state = AppState {
         items: Arc::new(Mutex::new(Vec::new())),
     };
