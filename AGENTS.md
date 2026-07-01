@@ -1,4 +1,4 @@
-# Agent instructions for RustAPI
+# Agent instructions for Ukidama
 
 These instructions guide agents in contributing to Rust projects, ensuring adherence to best practices, maintainability, and code quality.
 

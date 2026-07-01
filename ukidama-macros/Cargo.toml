@@ -1,5 +1,5 @@
 [package]
-name = "rustapi-macros"
+name = "ukidama-macros"
 version = "0.1.0"
 edition = "2021"
 

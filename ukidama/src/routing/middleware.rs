@@ -18,7 +18,7 @@ pub mod layers {
     };
 }
 
-/// A trait for adding middleware to RustAPI or APIRouter.
+/// A trait for adding middleware to Ukidama or APIRouter.
 pub trait MiddlewareExt<S>: Sized
 where
     S: Clone + Send + Sync + 'static,
@@ -32,7 +32,7 @@ where
     ///
     /// # Example
     /// ```rust
-    /// use rustapi::Request;
+    /// use ukidama::Request;
     /// use axum::middleware::Next;
     /// use axum::response::IntoResponse;
     ///

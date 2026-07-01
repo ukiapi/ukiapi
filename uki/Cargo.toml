@@ -1,15 +1,15 @@
 [package]
-name = "rustapi-cli"
+name = "uki"
 version = "0.1.0"
 edition = "2021"
-description = "CLI for RustAPI — run and develop RustAPI projects"
+description = "CLI for Ukidama — run and develop Ukidama projects"
 
 [[bin]]
-name = "rustapi"
+name = "uki"
 path = "src/main.rs"
 
 [[bin]]
-name = "rustapi-new"
+name = "uki-new"
 path = "src/new.rs"
 
 [dependencies]

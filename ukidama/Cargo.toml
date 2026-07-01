@@ -1,10 +1,10 @@
 [package]
-name = "rustapi"
+name = "ukidama"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rustapi-macros = { path = "../rustapi-macros" }
+ukidama-macros = { path = "../ukidama-macros" }
 axum = { version = "0.8", features = ["multipart", "ws"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }

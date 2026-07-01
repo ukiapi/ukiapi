@@ -1,16 +1,16 @@
-# State of the Art: RustAPI vs. Modern Rust Web Frameworks
+# State of the Art: Ukidama vs. Modern Rust Web Frameworks
 
-## Introduction to RustAPI
+## Introduction to Ukidama
 
-RustAPI is a web framework built on top of Axum, designed to offer a developer experience inspired by Python's FastAPI. Its primary goal is to provide highly ergonomic API development in Rust, featuring automatic OpenAPI documentation, robust data validation, and a clear structure for building RESTful services. RustAPI leverages Rust's strong type system and performance characteristics while aiming to simplify common web development patterns.
+Ukidama is a web framework built on top of Axum, designed to offer a developer experience inspired by Python's FastAPI. Its primary goal is to provide highly ergonomic API development in Rust, featuring automatic OpenAPI documentation, robust data validation, and a clear structure for building RESTful services. Ukidama leverages Rust's strong type system and performance characteristics while aiming to simplify common web development patterns.
 
-## Comparison: RustAPI vs. Key Rust Web Frameworks
+## Comparison: Ukidama vs. Key Rust Web Frameworks
 
-### 1. RustAPI vs. Axum
+### 1. Ukidama vs. Axum
 
 **Axum** is a web application framework that focuses on ergonomics and modularity, built by the Tokio team. It leverages Tokio's ecosystem and is known for its flexible design, allowing developers to pick and choose components.
 
-| Feature / Aspect             | Axum                                      | RustAPI                                                         |
+| Feature / Aspect             | Axum                                      | Ukidama                                                         |
 | :--------------------------- | :---------------------------------------- | :-------------------------------------------------------------- |
 | **Foundation**               | Tokio, Tower, Hyper                       | Axum                                                            |
 | **Philosophy**               | Minimalist, composable, "batteries not included" | FastAPI-inspired ergonomics, opinionated, "batteries included"  |
@@ -24,13 +24,13 @@ RustAPI is a web framework built on top of Axum, designed to offer a developer e
 | **Boilerplate**              | Higher for basic API setup                | Significantly reduced for common API patterns                   |
 | **Current Status**           | Mature, widely adopted                    | Under active development, aiming for feature parity with FastAPI core |
 
-**Key Differentiator:** RustAPI builds on Axum's solid foundation but adds a layer of opinionated macros and integrated utilities to drastically reduce boilerplate and streamline common API development tasks, especially for projects valuing auto-documentation and validation.
+**Key Differentiator:** Ukidama builds on Axum's solid foundation but adds a layer of opinionated macros and integrated utilities to drastically reduce boilerplate and streamline common API development tasks, especially for projects valuing auto-documentation and validation.
 
-### 2. RustAPI vs. Actix-web
+### 2. Ukidama vs. Actix-web
 
 **Actix-web** is one of the most popular and historically highest-performing Rust web frameworks. It's a "full-featured" framework with its own actor system, making it powerful but sometimes perceived as more complex than minimalist alternatives.
 
-| Feature / Aspect             | Actix-web                                 | RustAPI                                                            |
+| Feature / Aspect             | Actix-web                                 | Ukidama                                                            |
 | :--------------------------- | :---------------------------------------- | :----------------------------------------------------------------- |
 | **Foundation**               | Actix (actor system), Tokio               | Axum, Tokio, Tower, Hyper                                          |
 | **Philosophy**               | Performance-focused, actor-based, comprehensive | FastAPI-inspired ergonomics, developer experience, type-safety     |
@@ -43,8 +43,8 @@ RustAPI is a web framework built on top of Axum, designed to offer a developer e
 | **Ecosystem**                | Rich, mature actor model ecosystem        | Leverages Axum/Tokio ecosystem, growing tools                     |
 | **Learning Curve**           | Moderate to High (actor model concepts)   | Moderate (Rust-idiomatic with FastAPI patterns)                   |
 
-**Key Differentiator:** While both aim for high performance, Actix-web's actor model can introduce a different paradigm. RustAPI focuses on a more direct, function-based routing approach with deep integration of OpenAPI and validation, appealing to developers who prioritize DX and auto-documentation without compromising on Rust's benefits.
+**Key Differentiator:** While both aim for high performance, Actix-web's actor model can introduce a different paradigm. Ukidama focuses on a more direct, function-based routing approach with deep integration of OpenAPI and validation, appealing to developers who prioritize DX and auto-documentation without compromising on Rust's benefits.
 
 ## Conclusion
 
-RustAPI carves a niche by combining the robust, performant foundation of Axum with the developer-friendly patterns popularized by FastAPI. For projects where automatic API documentation, schema validation, and a batteries-included approach to common web development tasks are paramount, RustAPI aims to provide a highly productive and type-safe environment, making the transition for developers familiar with frameworks like FastAPI smoother, while still benefiting from the Rust ecosystem's strengths.
+Ukidama carves a niche by combining the robust, performant foundation of Axum with the developer-friendly patterns popularized by FastAPI. For projects where automatic API documentation, schema validation, and a batteries-included approach to common web development tasks are paramount, Ukidama aims to provide a highly productive and type-safe environment, making the transition for developers familiar with frameworks like FastAPI smoother, while still benefiting from the Rust ecosystem's strengths.

@@ -14,7 +14,7 @@ use serde_json::{json, Map};
 use std::future::Future;
 use std::sync::Arc;
 
-pub struct RustAPI<S = ()> {
+pub struct Ukidama<S = ()> {
     pub(crate) routes: Vec<Route<S>>,
     pub(crate) mounts: Vec<Mount<S>>,
     layers: Vec<RouterBuilder<S>>,
@@ -24,7 +24,7 @@ pub struct RustAPI<S = ()> {
     version: String,
 }
 
-impl<S> Default for RustAPI<S>
+impl<S> Default for Ukidama<S>
 where
     S: Clone + Send + Sync + 'static,
 {
@@ -33,7 +33,7 @@ where
     }
 }
 
-impl<S> RustAPI<S>
+impl<S> Ukidama<S>
 where
     S: Clone + Send + Sync + 'static,
 {
@@ -44,7 +44,7 @@ where
             layers: Vec::new(),
             startup_handlers: Vec::new(),
             shutdown_handlers: Vec::new(),
-            title: "RustAPI".to_string(),
+            title: "Ukidama".to_string(),
             version: "0.1.0".to_string(),
         }
     }
@@ -216,8 +216,8 @@ where
     }
 
     pub async fn serve(mut self, state: S) {
-        let host = std::env::var("RUSTAPI_HOST").unwrap_or_else(|_| "127.0.0.1".into());
-        let port = std::env::var("RUSTAPI_PORT").unwrap_or_else(|_| "3000".into());
+        let host = std::env::var("UKIDAMA_HOST").unwrap_or_else(|_| "127.0.0.1".into());
+        let port = std::env::var("UKIDAMA_PORT").unwrap_or_else(|_| "3000".into());
         let addr = format!("{}:{}", host, port);
 
         let startup_handlers = std::mem::take(&mut self.startup_handlers);
@@ -260,7 +260,7 @@ where
     }
 }
 
-impl<S> crate::routing::middleware::MiddlewareExt<S> for RustAPI<S>
+impl<S> crate::routing::middleware::MiddlewareExt<S> for Ukidama<S>
 where
     S: Clone + Send + Sync + 'static,
 {

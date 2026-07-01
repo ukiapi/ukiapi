@@ -21,4 +21,11 @@
 21: [ ] Design request-scoped Dependency Injection (DI) with yield-like teardown/cleanup hooks.
 22: [ ] Build declarative OAuth2 Security extractors with auto-populated OpenAPI scope/security definitions.
 23: [ ] Add support for dynamic response projection (runtime Pydantic-like field include/exclude).
-24: [ ] Create a developer terminal dashboard (TUI) or web console in `rustapi-cli` for live API metrics.
+24: [ ] Create a developer terminal dashboard (TUI) or web console in `uki` for live API metrics.
+25: [ ] Reach adequate test coverage (unit tests in core lib, integration tests, CI includes clippy/audit).
+26: [ ] Add health check endpoint (readiness/liveness probes for K8s deployment).
+27: [ ] Add security headers middleware (CSP, HSTS, X-Frame-Options, etc.) and rate limiting.
+28: [ ] Fix hardcoded JWT secret default (`"secret"`) — panic or require explicit config instead.
+29: [ ] Add config file support (beyond env vars) and secrets management.
+30: [ ] Add benchmarks (criterion) to validate performance claims.
+31: [ ] Bump to a stable version (≥1.0.0) with API stability guarantees.

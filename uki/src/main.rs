@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use colored::Colorize;
-use rustapi_cli::run_new;
+use uki::run_new;
 use std::env;
 use std::process::{Command, Stdio};
 
@@ -8,8 +8,8 @@ use std::process::{Command, Stdio};
 
 #[derive(Parser)]
 #[command(
-    name = "rustapi",
-    about = "RustAPI CLI — develop and run your RustAPI app",
+    name = "uki",
+    about = "Ukidama CLI — develop and run your Ukidama app",
     version,
     propagate_version = true
 )]
@@ -20,7 +20,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Create a new RustAPI project
+    /// Create a new Ukidama project
     New {
         /// Name of the project
         name: String,
@@ -96,7 +96,7 @@ fn print_banner(mode: &str, host: &str, port: u16, reload: bool) {
     println!();
     println!(
         "  {}  {}",
-        "🦀 RustAPI".bold(),
+        "🦀 Ukidama".bold(),
         format!("v{}", env!("CARGO_PKG_VERSION")).dimmed()
     );
     println!(
@@ -131,8 +131,8 @@ fn print_banner(mode: &str, host: &str, port: u16, reload: bool) {
 /// Build the list of env vars to inject into cargo run / cargo watch.
 fn build_env(host: &str, port: u16, workers: usize) -> Vec<(String, String)> {
     let mut env = vec![
-        ("RUSTAPI_HOST".into(), host.to_string()),
-        ("RUSTAPI_PORT".into(), port.to_string()),
+        ("UKIDAMA_HOST".into(), host.to_string()),
+        ("UKIDAMA_PORT".into(), port.to_string()),
     ];
     if workers > 0 {
         env.push(("TOKIO_WORKER_THREADS".into(), workers.to_string()));
@@ -175,7 +175,7 @@ fn detect_bin() -> String {
         .and_then(|p| p.file_name().map(|n| n.to_string_lossy().to_string()))
         .unwrap_or_default();
 
-    let cli_bins = ["rustapi", "rustapi-new"];
+    let cli_bins = ["uki", "uki-new"];
 
     let mut bins: Vec<String> = Vec::new();
     for pkg in packages {

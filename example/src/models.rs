@@ -1,5 +1,5 @@
-use rustapi::model;
-use rustapi::JsonSchema;
+use ukidama::model;
+use ukidama::JsonSchema;
 
 // Database Model (Internal)
 #[model]
@@ -46,7 +46,7 @@ pub struct TokenResponse {
     pub token_type: String,
 }
 
-#[derive(Debug, Clone, rustapi::Serialize, rustapi::Deserialize, JsonSchema)]
+#[derive(Debug, Clone, ukidama::Serialize, ukidama::Deserialize, JsonSchema)]
 pub struct UserClaims {
     pub sub: String,
     pub exp: u64,

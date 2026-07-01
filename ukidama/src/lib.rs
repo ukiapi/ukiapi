@@ -24,7 +24,7 @@ pub mod ws;
 
 pub use axum;
 pub use inventory;
-pub use rustapi_macros::{delete, get, model, patch, post, put, websocket};
+pub use ukidama_macros::{delete, get, model, patch, post, put, websocket};
 pub use schemars::JsonSchema;
 pub use serde::{Deserialize, Serialize};
 pub use serde_json::{json, Value};
@@ -44,28 +44,28 @@ pub use response::{HTTPException, Json, Response};
 pub use responses::{
     FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, StreamingResponse,
 };
-pub use routing::{APIRouter, Routable, Route, Router, RouterBuilder, RustAPI};
+pub use routing::{APIRouter, Routable, Route, Router, RouterBuilder, Ukidama};
 pub use test_client::TestClient;
 pub use upload::UploadFile;
 pub use utils::jsonable_encoder;
 
-/// Start the server. Reads `RUSTAPI_HOST` and `RUSTAPI_PORT` from the
-/// environment (set automatically by `rustapi run` / `rustapi dev`),
+/// Start the server. Reads `UKIDAMA_HOST` and `UKIDAMA_PORT` from the
+/// environment (set automatically by `uki run` / `uki dev`),
 /// falling back to `127.0.0.1:3000`.
 ///
 /// ```rust,no_run
 /// #[tokio::main]
 /// async fn main() {
-///     // let app = rustapi::routes![AppState, ...].build_router(state);
-///     // rustapi::serve(app).await;
+///     // let app = ukidama::routes![AppState, ...].build_router(state);
+///     // ukidama::serve(app).await;
 /// }
 /// ```
 pub async fn serve(router: Router<()>) {
     env_logger::init();
-    info!("Initializing RustAPI server...");
+    info!("Initializing Ukidama server...");
 
-    let host = std::env::var("RUSTAPI_HOST").unwrap_or_else(|_| "127.0.0.1".into());
-    let port = std::env::var("RUSTAPI_PORT").unwrap_or_else(|_| "3000".into());
+    let host = std::env::var("UKIDAMA_HOST").unwrap_or_else(|_| "127.0.0.1".into());
+    let port = std::env::var("UKIDAMA_PORT").unwrap_or_else(|_| "3000".into());
     let addr = format!("{}:{}", host, port);
 
     let listener = tokio::net::TcpListener::bind(&addr)
@@ -94,14 +94,14 @@ pub async fn serve(router: Router<()>) {
     .unwrap();
 }
 
-/// A macro to initialize a `RustAPI` instance with a set of routes.
+/// A macro to initialize a `Ukidama` instance with a set of routes.
 ///
 /// Usage: `routes![AppState, route1(), route2()]`
 #[macro_export]
 macro_rules! routes {
     ($state:ty, $($x:expr),* $(,)?) => {
         {
-            let mut api = $crate::RustAPI::<$state>::new();
+            let mut api = $crate::Ukidama::<$state>::new();
             $(
                 api = api.route($x);
             )*

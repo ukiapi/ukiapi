@@ -4,7 +4,7 @@ use crate::middleware::{self, Next};
 use crate::mount::Mount;
 use crate::response::{HTTPException, IntoResponse};
 use crate::routing::Router;
-use crate::routing::{api::RustAPI, route::Route, Routable, RouterBuilder};
+use crate::routing::{api::Ukidama, route::Route, Routable, RouterBuilder};
 use std::sync::Arc;
 
 /// A router for grouping routes with a common prefix and tags.
@@ -69,7 +69,7 @@ where
 
     /// Add a route or another router to this router.
     pub fn route<R: Routable<S>>(mut self, routable: R) -> Self {
-        let mut temp_api = RustAPI::<S>::new();
+        let mut temp_api = Ukidama::<S>::new();
         routable.add_to_api(&mut temp_api);
         for mut route in temp_api.routes {
             route.path = format!("{}{}", self.prefix, route.path);
@@ -139,7 +139,7 @@ impl<S> Routable<S> for APIRouter<S>
 where
     S: Clone + Send + Sync + 'static,
 {
-    fn add_to_api(self, api: &mut RustAPI<S>) {
+    fn add_to_api(self, api: &mut Ukidama<S>) {
         let layers = self.layers;
         for mut route in self.routes {
             let old_adder = route.adder;

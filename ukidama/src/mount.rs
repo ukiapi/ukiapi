@@ -1,4 +1,4 @@
-use crate::routing::{Routable, RustAPI};
+use crate::routing::{Routable, Ukidama};
 
 pub struct Mount<S> {
     pub path: String,
@@ -7,7 +7,7 @@ pub struct Mount<S> {
 }
 
 impl<S> Routable<S> for Mount<S> {
-    fn add_to_api(self, api: &mut RustAPI<S>) {
+    fn add_to_api(self, api: &mut Ukidama<S>) {
         api.mounts.push(self);
     }
 }

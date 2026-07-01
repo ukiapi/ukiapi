@@ -1,6 +1,6 @@
 use example::routes::*;
 use example::AppState;
-use rustapi::TestClient;
+use ukidama::TestClient;
 use std::sync::{Arc, Mutex};
 
 #[tokio::test]
@@ -9,7 +9,7 @@ async fn test_hello_endpoint() {
         items: Arc::new(Mutex::new(Vec::new())),
     };
 
-    let api = rustapi::routes![AppState, hello_route().with_state::<AppState>()];
+    let api = ukidama::routes![AppState, hello_route().with_state::<AppState>()];
 
     let client = TestClient::new(api, state);
 
@@ -23,7 +23,7 @@ async fn test_items_list() {
         items: Arc::new(Mutex::new(Vec::new())),
     };
 
-    let api = rustapi::routes![AppState, items_router()];
+    let api = ukidama::routes![AppState, items_router()];
 
     let client = TestClient::new(api, state);
 

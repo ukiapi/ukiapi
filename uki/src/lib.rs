@@ -2,12 +2,12 @@ use colored::Colorize;
 use std::fs;
 use std::process::{Command, Stdio};
 
-/// Create a new RustAPI project with the given name.
+/// Create a new Ukidama project with the given name.
 /// This will run `cargo init`, add necessary dependencies to `Cargo.toml`,
 /// and create a boilerplate `src/main.rs`.
 pub fn run_new(name: String) {
     println!(
-        "\n  {} Creating new RustAPI project: {}\n",
+        "\n  {} Creating new Ukidama project: {}\n",
         "🚀".cyan(),
         name.bold()
     );
@@ -34,8 +34,8 @@ pub fn run_new(name: String) {
     let mut cargo_toml = fs::read_to_string(&cargo_toml_path).unwrap();
 
     let deps = r#"
-rustapi = { path = "../../rustapi" }
-rustapi-macros = { path = "../../rustapi-macros" }
+ukidama = { path = "../../ukidama" }
+ukidama-macros = { path = "../../ukidama-macros" }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -51,8 +51,8 @@ schemars = "0.8"
 
     // 3. Create boilerplate main.rs
     let main_rs_path = format!("{}/src/main.rs", name);
-    let main_rs_content = r#"use rustapi::{routes, ValidatedJson, serve, Json};
-use rustapi::{get, post};
+    let main_rs_content = r#"use ukidama::{routes, ValidatedJson, serve, Json};
+use ukidama::{get, post};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use schemars::JsonSchema;
@@ -68,7 +68,7 @@ pub struct HelloRequest {
 
 #[get("/hello")]
 pub async fn hello() -> &'static str {
-    "Hello from RustAPI!"
+    "Hello from Ukidama!"
 }
 
 #[post("/greet")]
@@ -97,5 +97,5 @@ async fn main() {
     );
     println!("  {} To get started:", "→".cyan());
     println!("    cd {}", name);
-    println!("    rustapi dev\n");
+    println!("    uki dev\n");
 }

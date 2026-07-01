@@ -1,6 +1,6 @@
-# 🦀 RustAPI
+# 🦀 Ukidama
 
-**RustAPI** is a high-performance web framework for Rust, built on top of [Axum](https://github.com/tokio-rs/axum). It is designed to provide a developer experience similar to [FastAPI](https://fastapi.tiangolo.com/), focusing on ergonomics, automatic documentation, and type-safe data validation.
+**Ukidama** is a high-performance web framework for Rust, built on top of [Axum](https://github.com/tokio-rs/axum). It is designed to provide a developer experience similar to [FastAPI](https://fastapi.tiangolo.com/), focusing on ergonomics, automatic documentation, and type-safe data validation.
 
 ## ✨ Features
 
@@ -20,26 +20,26 @@
 ### 1. Install the CLI
 
 ```bash
-cargo install --git ssh://git@github.com/abundis29/rustapi.git rustapi-cli --tag v0.1.1
+cargo install --git ssh://git@github.com/abundis29/ukidama.git uki --tag v0.1.1
 ```
 
 ### 2. Create a new project
 
 ```bash
-rustapi new my-api
+uki new my-api
 cd my-api
 ```
 
 ### 3. Run in development mode
 
 ```bash
-rustapi dev
+uki dev
 ```
 
 Or with hot reload:
 
 ```bash
-rustapi dev --reload
+uki dev --reload
 ```
 
 Your API will be running at `http://localhost:3000`, with interactive docs at `http://localhost:3000/docs`.
@@ -47,8 +47,8 @@ Your API will be running at `http://localhost:3000`, with interactive docs at `h
 ## 📖 Example
 
 ```rust
-use rustapi::{get, post, routes, serve, ValidatedJson};
-use rustapi::Json;
+use ukidama::{get, post, routes, serve, ValidatedJson};
+use ukidama::Json;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use schemars::JsonSchema;
@@ -64,7 +64,7 @@ pub struct CreateItem {
 
 #[get("/hello")]
 pub async fn hello() -> &'static str {
-    "Hello from RustAPI!"
+    "Hello from Ukidama!"
 }
 
 #[post("/items")]
@@ -87,9 +87,9 @@ async fn main() {
 
 ## 🏗️ Project Structure
 
-- `rustapi`: Core library providing routing, extractors, and types.
-- `rustapi-macros`: Procedural macros for routing and models.
-- `rustapi-cli`: Command-line interface for managing RustAPI projects.
+- `ukidama`: Core library providing routing, extractors, and types.
+- `ukidama-macros`: Procedural macros for routing and models.
+- `uki`: Command-line interface for managing Ukidama projects.
 - `example`: A reference implementation demonstrating all features.
 
 ## ⚖️ License

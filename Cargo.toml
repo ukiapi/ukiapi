@@ -1,8 +1,8 @@
 [workspace]
 members = [
-    "rustapi",
-    "rustapi-macros",
-    "rustapi-cli",
+    "ukidama",
+    "ukidama-macros",
+    "uki",
     "example",
 ]
 resolver = "2"

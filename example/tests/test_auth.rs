@@ -1,8 +1,8 @@
 use example::models::{LoginRequest, TokenResponse, UserClaims};
 use example::routes::*;
 use example::AppState;
-use rustapi::test_client::ResponseExt;
-use rustapi::TestClient;
+use ukidama::test_client::ResponseExt;
+use ukidama::TestClient;
 use std::sync::{Arc, Mutex};
 
 #[tokio::test]
@@ -12,7 +12,7 @@ async fn test_auth_flow() {
         items: Arc::new(Mutex::new(Vec::new())),
     };
 
-    let api = rustapi::routes![AppState, auth_router()];
+    let api = ukidama::routes![AppState, auth_router()];
     let client = TestClient::new(api, state);
 
     // 1. Try to access /me without token
@@ -51,7 +51,7 @@ async fn test_auth_invalid_token() {
         items: Arc::new(Mutex::new(Vec::new())),
     };
 
-    let api = rustapi::routes![AppState, auth_router()];
+    let api = ukidama::routes![AppState, auth_router()];
     let client = TestClient::new(api, state);
 
     let response = client

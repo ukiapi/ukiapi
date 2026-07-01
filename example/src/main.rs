@@ -2,9 +2,9 @@ use axum::middleware::Next;
 use axum::response::IntoResponse;
 use example::routes::*;
 use example::AppState;
-use rustapi::routing::middleware::layers::CorsLayer;
-use rustapi::routing::middleware::MiddlewareExt;
-use rustapi::Request;
+use ukidama::routing::middleware::layers::CorsLayer;
+use ukidama::routing::middleware::MiddlewareExt;
+use ukidama::Request;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -28,7 +28,7 @@ async fn main() {
         items: Arc::new(Mutex::new(Vec::new())),
     };
 
-    rustapi::routes![AppState, items_router(), auth_router(),]
+    ukidama::routes![AppState, items_router(), auth_router(),]
         .autodiscover()
         .title("Example API")
         .version("1.0.0")

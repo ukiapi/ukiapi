@@ -1,8 +1,8 @@
 use clap::Parser;
-use rustapi_cli::run_new;
+use uki::run_new;
 
 #[derive(Parser)]
-#[command(name = "rustapi-new", about = "Create a new RustAPI project", version)]
+#[command(name = "uki-new", about = "Create a new Ukidama project", version)]
 struct Cli {
     /// Name of the project
     name: String,

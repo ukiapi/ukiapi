@@ -2,30 +2,30 @@ use crate::models::{
     ItemCreate, ItemDb, ItemResponse, ListItemsQuery, LoginRequest, TokenResponse, UserClaims,
 };
 use crate::AppState;
-use rustapi::http::StatusCode;
-use rustapi::State;
-use rustapi::{
+use ukidama::http::StatusCode;
+use ukidama::State;
+use ukidama::{
     encode_jwt, error, get, info, jsonable_encoder, post, APIRouter, BackgroundTasks, Depends,
     FileResponse, HTMLResponse, HTTPException, JWTAuth, RedirectResponse, Response, UploadFile,
     ValidatedJson,
 };
-use rustapi::{websocket, Message, WebSocket, WebSocketUpgrade};
+use ukidama::{websocket, Message, WebSocket, WebSocketUpgrade};
 use std::fs::OpenOptions;
 use std::io::Write;
 
-rustapi::declare_registry!(crate::AppState, ItemsRoute);
-rustapi::declare_registry!(crate::AppState, AuthRoute);
+ukidama::declare_registry!(crate::AppState, ItemsRoute);
+ukidama::declare_registry!(crate::AppState, AuthRoute);
 
 #[get("/hello")]
 pub async fn hello() -> &'static str {
     info!("Accessed /hello route.");
-    "Hello from RustAPI!"
+    "Hello from Ukidama!"
 }
 
 #[post("/login", registry = AuthRoute)]
 pub async fn login(
     ValidatedJson(body): ValidatedJson<LoginRequest>,
-) -> Result<rustapi::Json<TokenResponse>, HTTPException> {
+) -> Result<ukidama::Json<TokenResponse>, HTTPException> {
     info!("Logging in user: {}", body.username);
 
     let expiration = std::time::SystemTime::now()
@@ -52,22 +52,22 @@ pub async fn login(
         )
     })?;
 
-    Ok(rustapi::Json(TokenResponse {
+    Ok(ukidama::Json(TokenResponse {
         access_token: token,
         token_type: "Bearer".to_string(),
     }))
 }
 
 #[get("/me", registry = AuthRoute)]
-pub async fn me(Depends(claims, _): Depends<JWTAuth<UserClaims>>) -> rustapi::Json<UserClaims> {
-    rustapi::Json(claims)
+pub async fn me(Depends(claims, _): Depends<JWTAuth<UserClaims>>) -> ukidama::Json<UserClaims> {
+    ukidama::Json(claims)
 }
 
 #[get("", registry = ItemsRoute)]
 pub async fn list_items(
     State(state): State<AppState>,
-    rustapi::Query(query): rustapi::Query<ListItemsQuery>,
-) -> rustapi::Json<rustapi::Value> {
+    ukidama::Query(query): ukidama::Query<ListItemsQuery>,
+) -> ukidama::Json<ukidama::Value> {
     info!("Accessed /items route with query: {:?}", query.q);
     let items = state.items.lock().unwrap();
     let limit = query.limit.unwrap_or(10) as usize;
@@ -90,14 +90,14 @@ pub async fn list_items(
 
     results.truncate(limit);
     // Demonstrate jsonable_encoder
-    rustapi::Json(jsonable_encoder(results))
+    ukidama::Json(jsonable_encoder(results))
 }
 
 #[get("/{id}", registry = ItemsRoute)]
 pub async fn get_item(
     State(state): State<AppState>,
-    rustapi::Path(id): rustapi::Path<i32>,
-) -> Result<rustapi::Json<ItemResponse>, HTTPException> {
+    ukidama::Path(id): ukidama::Path<i32>,
+) -> Result<ukidama::Json<ItemResponse>, HTTPException> {
     info!("Accessed /items/{} route.", id);
     let items = state.items.lock().unwrap();
     let item = items.iter().find(|i| i.id == id).ok_or_else(|| {
@@ -105,7 +105,7 @@ pub async fn get_item(
         HTTPException::new(StatusCode::NOT_FOUND, format!("Item {} not found", id))
     })?;
 
-    Ok(rustapi::Json(ItemResponse {
+    Ok(ukidama::Json(ItemResponse {
         id: item.id,
         name: item.name.clone(),
         price: item.price,
@@ -116,7 +116,7 @@ pub async fn get_item(
 pub async fn create_item(
     State(state): State<AppState>,
     ValidatedJson(body): ValidatedJson<ItemCreate>,
-) -> Response<rustapi::Json<ItemResponse>> {
+) -> Response<ukidama::Json<ItemResponse>> {
     info!("Accessed /items route. Creating item: {}.", body.name);
     let mut items = state.items.lock().unwrap();
     let next_id = items.len() as i32 + 1;
@@ -133,7 +133,7 @@ pub async fn create_item(
 
     Response::new(
         StatusCode::CREATED,
-        rustapi::Json(ItemResponse {
+        ukidama::Json(ItemResponse {
             id: db_item.id,
             name: db_item.name,
             price: db_item.price,
@@ -151,7 +151,7 @@ pub async fn trigger_error() -> Result<&'static str, HTTPException> {
 }
 
 #[get("/request-info", registry = ItemsRoute)]
-pub async fn request_info(req: rustapi::Request) -> String {
+pub async fn request_info(req: ukidama::Request) -> String {
     info!(
         "Accessed /request-info route. Method: {}, Path: {}",
         req.method(),
@@ -166,7 +166,7 @@ pub async fn request_info(req: rustapi::Request) -> String {
 
 #[get("/html", registry = ItemsRoute)]
 pub async fn html_example() -> HTMLResponse {
-    HTMLResponse::new("<h1>Hello from RustAPI HTML Response!</h1>")
+    HTMLResponse::new("<h1>Hello from Ukidama HTML Response!</h1>")
 }
 
 #[get("/redirect", registry = ItemsRoute)]
@@ -180,7 +180,7 @@ pub async fn file_example() -> FileResponse {
 }
 
 #[get("/background")]
-pub async fn background_handler(tasks: BackgroundTasks) -> rustapi::Json<rustapi::Value> {
+pub async fn background_handler(tasks: BackgroundTasks) -> ukidama::Json<ukidama::Value> {
     info!("Accessed /background route. Scheduling tasks.");
     tasks.add_task(async {
         let mut file = OpenOptions::new()
@@ -206,13 +206,13 @@ pub async fn background_handler(tasks: BackgroundTasks) -> rustapi::Json<rustapi
         file.flush().unwrap();
     });
 
-    rustapi::Json(rustapi::json!({
+    ukidama::Json(ukidama::json!({
         "message": "Background tasks scheduled"
     }))
 }
 
 #[post("/upload")]
-pub async fn upload_handler(file: UploadFile) -> rustapi::Json<rustapi::Value> {
+pub async fn upload_handler(file: UploadFile) -> ukidama::Json<ukidama::Value> {
     let filename = file
         .filename
         .clone()
@@ -222,12 +222,12 @@ pub async fn upload_handler(file: UploadFile) -> rustapi::Json<rustapi::Value> {
 
     // Save the file
     if let Err(e) = file.save(&filename).await {
-        return rustapi::Json(rustapi::json!({
+        return ukidama::Json(ukidama::json!({
             "error": format!("Failed to save file: {}", e)
         }));
     }
 
-    rustapi::Json(rustapi::json!({
+    ukidama::Json(ukidama::json!({
         "message": "File uploaded successfully",
         "filename": filename,
         "size": size,
@@ -247,7 +247,7 @@ pub fn auth_router() -> APIRouter<AppState> {
 }
 
 #[websocket("/ws")]
-pub async fn ws_echo(ws: WebSocketUpgrade) -> rustapi::response::AxumResponse {
+pub async fn ws_echo(ws: WebSocketUpgrade) -> ukidama::response::AxumResponse {
     info!("New WebSocket connection request.");
     ws.on_upgrade(handle_socket)
 }

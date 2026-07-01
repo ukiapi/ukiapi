@@ -1,20 +1,38 @@
-use serde_json::Value;
-use crate::routing::{RouteAdder, RustAPI, Routable};
 use crate::handler::Handler;
-use crate::routing::{methods, Router};
+use crate::routing::api::Ukidama;
+use crate::routing::methods;
+use crate::routing::Router;
+use serde_json::Value;
 
+/// A type alias for a boxed closure that adds a route to a Router.
+pub type RouteAdder<S> = Box<dyn FnOnce(Router<S>, &str) -> Router<S> + Send>;
+
+/// Trait for items that can be added to the Ukidama router.
+pub trait Routable<S> {
+    /// Add the routes defined by this item to the Ukidama instance.
+    fn add_to_api(self, api: &mut Ukidama<S>);
+}
+
+/// Represents a single API route.
 pub struct Route<S = ()> {
+    /// The HTTP method for this route (e.g., "GET", "POST").
     pub method: &'static str,
+    /// The path for this route.
     pub path: String,
+    /// The closure used to add this route to a Router.
     pub adder: RouteAdder<S>,
+    /// The request schema for OpenAPI documentation.
     pub request_schema: Option<Value>,
+    /// The response schema for OpenAPI documentation.
     pub response_schema: Option<Value>,
+    /// The query parameters schema for OpenAPI documentation.
     pub query_schema: Option<Value>,
+    /// Tags for OpenAPI documentation grouping.
     pub tags: Vec<String>,
 }
 
 impl<S> Routable<S> for Route<S> {
-    fn add_to_api(self, api: &mut RustAPI<S>) {
+    fn add_to_api(self, api: &mut Ukidama<S>) {
         api.routes.push(self);
     }
 }
@@ -23,23 +41,18 @@ impl<S> Route<S>
 where
     S: Clone + Send + Sync + 'static,
 {
-    pub fn new<H, T>(method: &'static str, path: &'static str, handler: H) -> Self
+    pub(crate) fn new<H, T>(method: &'static str, path: &'static str, handler: H) -> Self
     where
         H: Handler<T, S>,
         T: 'static,
     {
         let adder: RouteAdder<S> = match method {
             "GET" => Box::new(move |router, path| router.route(path, methods::get(handler))),
-            "POST" => {
-                Box::new(move |router, path| router.route(path, methods::post(handler)))
-            }
+            "POST" => Box::new(move |router, path| router.route(path, methods::post(handler))),
             "PUT" => Box::new(move |router, path| router.route(path, methods::put(handler))),
-            "DELETE" => {
-                Box::new(move |router, path| router.route(path, methods::delete(handler)))
-            }
-            "PATCH" => {
-                Box::new(move |router, path| router.route(path, methods::patch(handler)))
-            }
+            "DELETE" => Box::new(move |router, path| router.route(path, methods::delete(handler))),
+            "PATCH" => Box::new(move |router, path| router.route(path, methods::patch(handler))),
+            "ANY" => Box::new(move |router, path| router.route(path, methods::any(handler))),
             _ => unreachable!(),
         };
         Self {
@@ -53,26 +66,31 @@ where
         }
     }
 
+    /// Set the request schema for OpenAPI documentation.
     pub fn with_request_schema(mut self, schema: Value) -> Self {
         self.request_schema = Some(schema);
         self
     }
 
+    /// Set the response schema for OpenAPI documentation.
     pub fn with_response_schema(mut self, schema: Value) -> Self {
         self.response_schema = Some(schema);
         self
     }
 
+    /// Set the query parameters schema for OpenAPI documentation.
     pub fn with_query_schema(mut self, schema: Value) -> Self {
         self.query_schema = Some(schema);
         self
     }
 
+    /// Add a tag to this route for OpenAPI documentation grouping.
     pub fn tag(mut self, tag: &str) -> Self {
         self.tags.push(tag.to_string());
         self
     }
 
+    /// Create a new GET route.
     pub fn get<H, T>(path: &'static str, handler: H) -> Self
     where
         H: Handler<T, S>,
@@ -81,6 +99,7 @@ where
         Self::new("GET", path, handler)
     }
 
+    /// Create a new POST route.
     pub fn post<H, T>(path: &'static str, handler: H) -> Self
     where
         H: Handler<T, S>,
@@ -89,6 +108,7 @@ where
         Self::new("POST", path, handler)
     }
 
+    /// Create a new PUT route.
     pub fn put<H, T>(path: &'static str, handler: H) -> Self
     where
         H: Handler<T, S>,
@@ -97,6 +117,7 @@ where
         Self::new("PUT", path, handler)
     }
 
+    /// Create a new DELETE route.
     pub fn delete<H, T>(path: &'static str, handler: H) -> Self
     where
         H: Handler<T, S>,
@@ -105,6 +126,7 @@ where
         Self::new("DELETE", path, handler)
     }
 
+    /// Create a new PATCH route.
     pub fn patch<H, T>(path: &'static str, handler: H) -> Self
     where
         H: Handler<T, S>,
@@ -112,9 +134,19 @@ where
     {
         Self::new("PATCH", path, handler)
     }
+
+    /// Create a new WebSocket route (uses ANY method).
+    pub fn websocket<H, T>(path: &'static str, handler: H) -> Self
+    where
+        H: Handler<T, S>,
+        T: 'static,
+    {
+        Self::new("ANY", path, handler)
+    }
 }
 
 impl Route<()> {
+    /// Convert this stateless route to a stateful one.
     pub fn with_state<NewS>(self) -> Route<NewS>
     where
         NewS: Clone + Send + Sync + 'static,

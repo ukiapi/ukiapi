@@ -89,7 +89,7 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
             if let Some((name, inner)) = extractor_inner_type(&pat_type.ty) {
                 if name == "Json" || name == "ValidatedJson" {
                     return Some(
-                        quote! { .with_request_schema(::rustapi::schema_for::<#inner>()) },
+                        quote! { .with_request_schema(::ukidama::schema_for::<#inner>()) },
                     );
                 }
             }
@@ -101,7 +101,7 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
         if let syn::FnArg::Typed(pat_type) = input {
             if let Some((name, inner)) = extractor_inner_type(&pat_type.ty) {
                 if name == "Query" {
-                    return Some(quote! { .with_query_schema(::rustapi::schema_for::<#inner>()) });
+                    return Some(quote! { .with_query_schema(::ukidama::schema_for::<#inner>()) });
                 }
             }
         }
@@ -113,7 +113,7 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
         syn::ReturnType::Type(_, ret_ty) => {
             if let Some((name, inner)) = extractor_inner_type(ret_ty.as_ref()) {
                 if name == "Json" {
-                    Some(quote! { .with_response_schema(::rustapi::schema_for::<#inner>()) })
+                    Some(quote! { .with_response_schema(::ukidama::schema_for::<#inner>()) })
                 } else {
                     None
                 }
@@ -126,12 +126,12 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
 
     let registry_submit = if let Some(reg) = &route_args.registry {
         if state_ty.to_string() == "()" {
-            quote! { ::rustapi::submit_route!(#route_fn_name, #reg, stateless); }
+            quote! { ::ukidama::submit_route!(#route_fn_name, #reg, stateless); }
         } else {
-            quote! { ::rustapi::submit_route!(#route_fn_name, #reg, stateful); }
+            quote! { ::ukidama::submit_route!(#route_fn_name, #reg, stateful); }
         }
     } else if state_ty.to_string() == "()" {
-        quote! { ::rustapi::submit_route!(#route_fn_name); }
+        quote! { ::ukidama::submit_route!(#route_fn_name); }
     } else {
         quote! {}
     };
@@ -142,8 +142,8 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
 
 
         #[doc(hidden)]
-        pub fn #route_fn_name() -> ::rustapi::Route<#state_ty> {
-            ::rustapi::Route::#method_ident(#path_lit, #fn_name)
+        pub fn #route_fn_name() -> ::ukidama::Route<#state_ty> {
+            ::ukidama::Route::#method_ident(#path_lit, #fn_name)
                 #req_schema
                 #res_schema
                 #query_schema
@@ -160,8 +160,8 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
 pub fn model(_args: TokenStream, input: TokenStream) -> TokenStream {
     let item: proc_macro2::TokenStream = input.into();
     let expanded = quote! {
-        #[derive(::rustapi::Serialize, ::rustapi::Deserialize, ::rustapi::JsonSchema, ::validator::Validate, Clone, ::rustapi::ts_rs::TS)]
-        #[ts(export, crate = "::rustapi::ts_rs")]
+        #[derive(::ukidama::Serialize, ::ukidama::Deserialize, ::ukidama::JsonSchema, ::validator::Validate, Clone, ::ukidama::ts_rs::TS)]
+        #[ts(export, crate = "::ukidama::ts_rs")]
         #item
     };
     expanded.into()

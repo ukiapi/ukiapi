@@ -8,7 +8,7 @@ pub fn build_swagger_page() -> String {
     r#"<!DOCTYPE html>
 <html>
 <head>
-  <title>RustAPI — Swagger UI</title>
+  <title>Ukidama — Swagger UI</title>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
@@ -39,7 +39,7 @@ pub fn build_redoc_page() -> String {
     r#"<!DOCTYPE html>
 <html>
 <head>
-  <title>RustAPI — ReDoc</title>
+  <title>Ukidama — ReDoc</title>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
