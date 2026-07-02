@@ -17,3 +17,8 @@
 **Vulnerability:** The JWT authentication dependency used a hardcoded fallback value (`"secret"`) for the `JWT_SECRET` environment variable, resulting in predictable tokens if the environment variable was not configured.
 **Learning:** Default fallbacks for cryptographic secrets provide a false sense of security and a risk of deployment with insecure configurations. It is better to fail fast when configuration is missing than to fall back to a universally known secret.
 **Prevention:** Remove fallback values for critical secrets in framework-level code. Explicitly error out when the required configuration is not provided so that developers are forced to provision secrets securely.
+
+## 2024-05-24 - [Path Traversal / Arbitrary File Overwrite via UploadFile.save()]
+**Vulnerability:** The framework's `UploadFile` automatically sanitizes the upload filename by extracting just the base name. However, since the `save()` method natively writes directly to the Current Working Directory (CWD) by default, calling `save(&filename)` allows arbitrary file overwrite vulnerabilities in the CWD (e.g. overwriting `Cargo.toml`).
+**Learning:** Framework-level filename sanitization is not sufficient if the default save destination is inherently dangerous. Developers often mistakenly assume sanitized filenames are safe to use directly without explicitly building an absolute, isolated destination path.
+**Prevention:** Always explicitly define an isolated, absolute path (e.g., using `std::env::temp_dir().join(&filename)`) before passing it to the file `save()` method.

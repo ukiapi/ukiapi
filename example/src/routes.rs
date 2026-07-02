@@ -220,8 +220,9 @@ pub async fn upload_handler(file: UploadFile) -> ukidama::Json<ukidama::Value> {
     info!("Accessed /upload route. Uploading file: {}.", filename);
     let size = file.content.len();
 
-    // Save the file
-    if let Err(e) = file.save(&filename).await {
+    // 🛡️ Sentinel: Save to temp directory to prevent CWD file overwrite
+    let dest = std::env::temp_dir().join(&filename);
+    if let Err(e) = file.save(&dest).await {
         return ukidama::Json(ukidama::json!({
             "error": format!("Failed to save file: {}", e)
         }));
