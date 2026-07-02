@@ -41,6 +41,9 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 validator = { version = "0.20", features = ["derive"] }
 schemars = "0.8"
+
+[package.metadata.cargo-machete]
+ignored = ["schemars", "serde", "serde_json", "validator"]
 "#;
 
     if !cargo_toml.contains("[dependencies]") {
