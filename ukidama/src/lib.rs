@@ -13,6 +13,7 @@ pub mod middleware;
 pub mod mount;
 pub mod response;
 pub mod responses;
+pub mod projection;
 pub mod routing;
 pub mod server;
 pub mod static_files;
@@ -40,6 +41,7 @@ pub use env_logger;
 pub use extract::{Path, Request, State};
 pub use extractors::{Query, ValidatedJson};
 pub use log::{error, info};
+pub use projection::Projected;
 pub use response::{HTTPException, Json, Response};
 pub use responses::{
     FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, StreamingResponse,
