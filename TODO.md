@@ -20,7 +20,7 @@
 20: [x] Implement compile-time Zero-Boilerplate Route Autodiscovery and merging.
 21: [ ] Design request-scoped Dependency Injection (DI) with yield-like teardown/cleanup hooks.
 22: [ ] Build declarative OAuth2 Security extractors with auto-populated OpenAPI scope/security definitions.
-23: [ ] Add support for dynamic response projection (runtime Pydantic-like field include/exclude).
+23: [x] Add support for dynamic response projection (runtime Pydantic-like field include/exclude).
 24: [ ] Create a developer terminal dashboard (TUI) or web console in `uki` for live API metrics.
 25: [ ] Reach adequate test coverage (unit tests in core lib, integration tests, CI includes clippy/audit).
 26: [ ] Add health check endpoint (readiness/liveness probes for K8s deployment).

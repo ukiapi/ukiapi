@@ -6,8 +6,8 @@ use ukidama::http::StatusCode;
 use ukidama::State;
 use ukidama::{
     encode_jwt, error, get, info, jsonable_encoder, post, APIRouter, BackgroundTasks, Depends,
-    FileResponse, HTMLResponse, HTTPException, JWTAuth, RedirectResponse, Response, UploadFile,
-    ValidatedJson,
+    FileResponse, HTMLResponse, HTTPException, JWTAuth, Projected, RedirectResponse, Response,
+    UploadFile, ValidatedJson,
 };
 use ukidama::{websocket, Message, WebSocket, WebSocketUpgrade};
 use std::fs::OpenOptions;
@@ -97,7 +97,7 @@ pub async fn list_items(
 pub async fn get_item(
     State(state): State<AppState>,
     ukidama::Path(id): ukidama::Path<i32>,
-) -> Result<ukidama::Json<ItemResponse>, HTTPException> {
+) -> Result<Projected<ItemResponse>, HTTPException> {
     info!("Accessed /items/{} route.", id);
     let items = state.items.lock().unwrap();
     let item = items.iter().find(|i| i.id == id).ok_or_else(|| {
@@ -105,11 +105,14 @@ pub async fn get_item(
         HTTPException::new(StatusCode::NOT_FOUND, format!("Item {} not found", id))
     })?;
 
-    Ok(ukidama::Json(ItemResponse {
+    let response = ItemResponse {
         id: item.id,
         name: item.name.clone(),
         price: item.price,
-    }))
+    };
+
+    // Demonstrate dynamic projection by excluding price
+    Ok(Projected::new(response).exclude(vec!["price"]))
 }
 
 #[post("", registry = ItemsRoute)]
