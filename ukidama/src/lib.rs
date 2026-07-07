@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod background_tasks;
 pub mod body;
+pub mod features;
 pub mod connection;
 pub mod dependencies;
 pub mod docs;
@@ -37,6 +38,7 @@ pub use auth::{decode_jwt, encode_jwt, HTTPBearer, JWTAuth, OAuth2PasswordBearer
 pub use background_tasks::BackgroundTasks;
 pub use connection::HTTPConnection;
 pub use dependencies::{security, Dependency, Depends, Security};
+pub use features::scoped_di::{ScopedDependency, ScopedDepends, ScopedDiError};
 pub use env_logger;
 pub use extract::{Path, Request, State};
 pub use extractors::{Query, ValidatedJson};
