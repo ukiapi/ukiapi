@@ -46,7 +46,7 @@ where
             startup_handlers: Vec::new(),
             shutdown_handlers: Vec::new(),
             title: "UkiApi".to_string(),
-            version: "0.1.0".to_string(),
+            version: "0.0.1".to_string(),
         }
     }
 
