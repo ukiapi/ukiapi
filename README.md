@@ -1,6 +1,6 @@
-# 🦀 UkiApi
+# 🦀 UkiApi 🦀 
 
-**UkiApi** is a high-performance web framework for Rust, built on top of [Axum](https://github.com/tokio-rs/axum). It is designed to provide a developer experience similar to [FastAPI](https://fastapi.tiangolo.com/), focusing on ergonomics, automatic documentation, and type-safe data validation.
+**UkiApi** is a high-performance web framework for Rust, built on top of [Axum](https://github.com/tokio-rs/axum), focusing on ergonomics, automatic documentation, and type-safe data validation.
 
 ## ✨ Features
 
@@ -12,7 +12,6 @@
 - 🧩 **Middleware:** Custom middleware, CORS, logging, compression, and timeout support.
 - 📁 **Static Files & Uploads:** Built-in file serving and multipart upload handling.
 - ⏳ **Background Tasks:** Schedule async tasks to run after the response is sent.
-- 📦 **FastAPI-like DX:** Familiar patterns for developers coming from Python.
 - 🛠️ **CLI Tooling:** Dedicated CLI for scaffolding and development.
 
 ## 🚀 Quick Start
