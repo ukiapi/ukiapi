@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.0.1
+
+### Changed
+- **BREAKING:** Rename project from `ukidama` to `ukiapi`
+- Update all package names: `ukiapi`, `ukiapi-macros`
+- Update environment variables: `UKIAPI_HOST`, `UKIAPI_PORT`
+- Update CLI banners and help text to reference UkiApi
+
+### Added
+- MIT License file
+- CI badge and license badge in README
+- Contributing guidelines (CONTRIBUTING.md)
+- Health check endpoint for K8s readiness/liveness probes
+- Scoped Dependency Injection support
+- Dynamic response projection with field inclusion/exclusion
+
+### Fixed
+- Path traversal vulnerability in `UploadFile` extraction
+- Hardcoded JWT secret fallback
+
+### Removed
+- Delete `STATE_OF_THE_ART.md`
+- Remove AI restriction policy from AGENTS.md
+
 ## v0.1.5
 
 ### Added
@@ -19,7 +43,8 @@
 - Fix example imports for `HTMLResponse`, `RedirectResponse`, `FileResponse`, `BackgroundTasks`, `UploadFile`, and `jsonable_encoder`
 
 ## v0.1.1
-n### Added
+
+### Added
 - Integrate WebSockets support with `#[websocket]` macro and `WebSocketUpgrade` extractor
 
 ### Fixed
