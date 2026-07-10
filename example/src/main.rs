@@ -4,9 +4,9 @@ use example::routes::*;
 use example::AppState;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use ukidama::routing::middleware::layers::CorsLayer;
-use ukidama::routing::middleware::MiddlewareExt;
-use ukidama::Request;
+use ukiapi::routing::middleware::layers::CorsLayer;
+use ukiapi::routing::middleware::MiddlewareExt;
+use ukiapi::Request;
 
 async fn logging_middleware(req: Request, next: Next) -> axum::response::Response {
     println!(
@@ -28,7 +28,7 @@ async fn main() {
         items: Arc::new(Mutex::new(Vec::new())),
     };
 
-    ukidama::routes![AppState, items_router(), auth_router(),]
+    ukiapi::routes![AppState, items_router(), auth_router(),]
         .autodiscover()
         .title("Example API")
         .version("1.0.0")
@@ -39,7 +39,6 @@ async fn main() {
             println!("🛑 Application shutting down...");
         })
         .mount("/static", ".")
-        // Middleware
         .middleware(logging_middleware)
         .logger()
         .compression()

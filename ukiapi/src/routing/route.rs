@@ -1,5 +1,5 @@
 use crate::handler::Handler;
-use crate::routing::api::Ukidama;
+use crate::routing::api::UkiApi;
 use crate::routing::methods;
 use crate::routing::Router;
 use serde_json::Value;
@@ -7,10 +7,10 @@ use serde_json::Value;
 /// A type alias for a boxed closure that adds a route to a Router.
 pub type RouteAdder<S> = Box<dyn FnOnce(Router<S>, &str) -> Router<S> + Send>;
 
-/// Trait for items that can be added to the Ukidama router.
+/// Trait for items that can be added to the UkiApi router.
 pub trait Routable<S> {
-    /// Add the routes defined by this item to the Ukidama instance.
-    fn add_to_api(self, api: &mut Ukidama<S>);
+    /// Add the routes defined by this item to the UkiApi instance.
+    fn add_to_api(self, api: &mut UkiApi<S>);
 }
 
 /// Represents a single API route.
@@ -32,7 +32,7 @@ pub struct Route<S = ()> {
 }
 
 impl<S> Routable<S> for Route<S> {
-    fn add_to_api(self, api: &mut Ukidama<S>) {
+    fn add_to_api(self, api: &mut UkiApi<S>) {
         api.routes.push(self);
     }
 }

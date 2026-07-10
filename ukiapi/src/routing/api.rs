@@ -15,7 +15,7 @@ use serde_json::{json, Map};
 use std::future::Future;
 use std::sync::Arc;
 
-pub struct Ukidama<S = ()> {
+pub struct UkiApi<S = ()> {
     pub(crate) routes: Vec<Route<S>>,
     pub(crate) mounts: Vec<Mount<S>>,
     layers: Vec<RouterBuilder<S>>,
@@ -25,7 +25,7 @@ pub struct Ukidama<S = ()> {
     version: String,
 }
 
-impl<S> Default for Ukidama<S>
+impl<S> Default for UkiApi<S>
 where
     S: Clone + Send + Sync + 'static,
 {
@@ -34,7 +34,7 @@ where
     }
 }
 
-impl<S> Ukidama<S>
+impl<S> UkiApi<S>
 where
     S: Clone + Send + Sync + 'static,
 {
@@ -45,7 +45,7 @@ where
             layers: Vec::new(),
             startup_handlers: Vec::new(),
             shutdown_handlers: Vec::new(),
-            title: "Ukidama".to_string(),
+            title: "UkiApi".to_string(),
             version: "0.1.0".to_string(),
         }
     }
@@ -181,7 +181,6 @@ where
             router = layer_fn(router);
         }
 
-        // Add BackgroundTasks middleware
         router = router.layer(middleware::from_fn(
             |mut req: Request, next: Next| async move {
                 let tasks = BackgroundTasks::default();
@@ -226,8 +225,8 @@ where
     }
 
     pub async fn serve(mut self, state: S) {
-        let host = std::env::var("UKIDAMA_HOST").unwrap_or_else(|_| "127.0.0.1".into());
-        let port = std::env::var("UKIDAMA_PORT").unwrap_or_else(|_| "3000".into());
+        let host = std::env::var("UKIAPI_HOST").unwrap_or_else(|_| "127.0.0.1".into());
+        let port = std::env::var("UKIAPI_PORT").unwrap_or_else(|_| "3000".into());
         let addr = format!("{}:{}", host, port);
 
         let startup_handlers = std::mem::take(&mut self.startup_handlers);
@@ -270,7 +269,7 @@ where
     }
 }
 
-impl<S> crate::routing::middleware::MiddlewareExt<S> for Ukidama<S>
+impl<S> crate::routing::middleware::MiddlewareExt<S> for UkiApi<S>
 where
     S: Clone + Send + Sync + 'static,
 {

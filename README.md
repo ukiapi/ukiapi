@@ -1,6 +1,6 @@
-# 🦀 Ukidama
+# 🦀 UkiApi
 
-**Ukidama** is a high-performance web framework for Rust, built on top of [Axum](https://github.com/tokio-rs/axum). It is designed to provide a developer experience similar to [FastAPI](https://fastapi.tiangolo.com/), focusing on ergonomics, automatic documentation, and type-safe data validation.
+**UkiApi** is a high-performance web framework for Rust, built on top of [Axum](https://github.com/tokio-rs/axum). It is designed to provide a developer experience similar to [FastAPI](https://fastapi.tiangolo.com/), focusing on ergonomics, automatic documentation, and type-safe data validation.
 
 ## ✨ Features
 
@@ -20,7 +20,7 @@
 ### 1. Install the CLI
 
 ```bash
-cargo install --git ssh://git@github.com/abundis29/ukidama.git uki --tag v0.1.1
+cargo install --git git@github.com:ukiapi/ukiapi.git uki
 ```
 
 ### 2. Create a new project
@@ -47,8 +47,8 @@ Your API will be running at `http://localhost:3000`, with interactive docs at `h
 ## 📖 Example
 
 ```rust
-use ukidama::{get, post, routes, serve, ValidatedJson};
-use ukidama::Json;
+use ukiapi::{get, post, routes, serve, ValidatedJson};
+use ukiapi::Json;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use schemars::JsonSchema;
@@ -64,7 +64,7 @@ pub struct CreateItem {
 
 #[get("/hello")]
 pub async fn hello() -> &'static str {
-    "Hello from Ukidama!"
+    "Hello from UkiApi!"
 }
 
 #[post("/items")]
@@ -87,11 +87,11 @@ async fn main() {
 
 ## 🏗️ Project Structure
 
-- `ukidama`: Core library providing routing, extractors, and types.
-- `ukidama-macros`: Procedural macros for routing and models.
-- `uki`: Command-line interface for managing Ukidama projects.
+- `ukiapi`: Core library providing routing, extractors, and types.
+- `ukiapi-macros`: Procedural macros for routing and models.
+- `uki`: Command-line interface for managing UkiApi projects.
 - `example`: A reference implementation demonstrating all features.
 
 ## ⚖️ License
 
-MIT OR Apache-2.0
+MIT

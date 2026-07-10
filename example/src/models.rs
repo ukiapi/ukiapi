@@ -1,7 +1,6 @@
-use ukidama::model;
-use ukidama::JsonSchema;
+use ukiapi::model;
+use ukiapi::JsonSchema;
 
-// Database Model (Internal)
 #[model]
 pub struct ItemDb {
     pub id: i32,
@@ -10,7 +9,6 @@ pub struct ItemDb {
     pub internal_secret: String,
 }
 
-// API Request Model (What the user sends)
 #[model]
 pub struct ItemCreate {
     #[validate(length(min = 1, max = 50))]
@@ -19,7 +17,6 @@ pub struct ItemCreate {
     pub price: f64,
 }
 
-// API Response Model (What the user gets)
 #[model]
 pub struct ItemResponse {
     pub id: i32,
@@ -27,7 +24,6 @@ pub struct ItemResponse {
     pub price: f64,
 }
 
-// Query Parameters
 #[model]
 pub struct ListItemsQuery {
     pub q: Option<String>,
@@ -46,7 +42,7 @@ pub struct TokenResponse {
     pub token_type: String,
 }
 
-#[derive(Debug, Clone, ukidama::Serialize, ukidama::Deserialize, JsonSchema)]
+#[derive(Debug, Clone, ukiapi::Serialize, ukiapi::Deserialize, JsonSchema)]
 pub struct UserClaims {
     pub sub: String,
     pub exp: u64,

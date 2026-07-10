@@ -1,10 +1,10 @@
 [package]
-name = "ukidama"
+name = "ukiapi"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ukidama-macros = { path = "../ukidama-macros" }
+ukiapi-macros = { path = "../ukiapi-macros" }
 axum = { version = "0.8", features = ["multipart", "ws"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }

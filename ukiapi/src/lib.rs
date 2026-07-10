@@ -31,7 +31,7 @@ pub use schemars::JsonSchema;
 pub use serde::{Deserialize, Serialize};
 pub use serde_json::{json, Value};
 pub use ts_rs;
-pub use ukidama_macros::{delete, get, model, patch, post, put, websocket};
+pub use ukiapi_macros::{delete, get, model, patch, post, put, websocket};
 pub use validator::Validate;
 pub use ws::{Message, WebSocket, WebSocketUpgrade};
 
@@ -49,28 +49,28 @@ pub use response::{HTTPException, Json, Response};
 pub use responses::{
     FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, StreamingResponse,
 };
-pub use routing::{APIRouter, Routable, Route, Router, RouterBuilder, Ukidama};
+pub use routing::{APIRouter, Routable, Route, Router, RouterBuilder, UkiApi};
 pub use test_client::TestClient;
 pub use upload::UploadFile;
 pub use utils::jsonable_encoder;
 
-/// Start the server. Reads `UKIDAMA_HOST` and `UKIDAMA_PORT` from the
+/// Start the server. Reads `UKIAPI_HOST` and `UKIAPI_PORT` from the
 /// environment (set automatically by `uki run` / `uki dev`),
 /// falling back to `127.0.0.1:3000`.
 ///
 /// ```rust,no_run
 /// #[tokio::main]
 /// async fn main() {
-///     // let app = ukidama::routes![AppState, ...].build_router(state);
-///     // ukidama::serve(app).await;
+///     // let app = ukiapi::routes![AppState, ...].build_router(state);
+///     // ukiapi::serve(app).await;
 /// }
 /// ```
 pub async fn serve(router: Router<()>) {
     env_logger::init();
-    info!("Initializing Ukidama server...");
+    info!("Initializing UkiApi server...");
 
-    let host = std::env::var("UKIDAMA_HOST").unwrap_or_else(|_| "127.0.0.1".into());
-    let port = std::env::var("UKIDAMA_PORT").unwrap_or_else(|_| "3000".into());
+    let host = std::env::var("UKIAPI_HOST").unwrap_or_else(|_| "127.0.0.1".into());
+    let port = std::env::var("UKIAPI_PORT").unwrap_or_else(|_| "3000".into());
     let addr = format!("{}:{}", host, port);
 
     let listener = tokio::net::TcpListener::bind(&addr)
@@ -99,14 +99,14 @@ pub async fn serve(router: Router<()>) {
     .unwrap();
 }
 
-/// A macro to initialize a `Ukidama` instance with a set of routes.
+/// A macro to initialize a `UkiApi` instance with a set of routes.
 ///
 /// Usage: `routes![AppState, route1(), route2()]`
 #[macro_export]
 macro_rules! routes {
     ($state:ty, $($x:expr),* $(,)?) => {
         {
-            let mut api = $crate::Ukidama::<$state>::new();
+            let mut api = $crate::UkiApi::<$state>::new();
             $(
                 api = api.route($x);
             )*

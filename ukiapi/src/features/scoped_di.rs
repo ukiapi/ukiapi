@@ -63,12 +63,10 @@ where
     type Rejection = HTTPException;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        // Resolve the scoped dependency
         let (resolved_value, teardown_future) = D::resolve(parts, state)
             .await
             .map_err(Into::<HTTPException>::into)?;
 
-        // Retrieve BackgroundTasks or insert it if not present
         let background_tasks = if let Some(tasks) = parts.extensions.get::<BackgroundTasks>() {
             tasks.clone()
         } else {
@@ -77,7 +75,6 @@ where
             tasks
         };
 
-        // Add the teardown future to BackgroundTasks
         background_tasks.add_task(teardown_future);
 
         Ok(ScopedDepends(resolved_value, PhantomData))
@@ -102,9 +99,7 @@ mod tests {
             _state: &(),
         ) -> Result<(Self::Output, BoxFuture<'static, ()>), ScopedDiError> {
             let output = "scoped_value".to_string();
-            let teardown_future = Box::pin(async {
-                // Simulate teardown action
-            });
+            let teardown_future = Box::pin(async {});
             Ok((output, teardown_future))
         }
     }
@@ -116,7 +111,6 @@ mod tests {
 
         let mut my_parts = parts;
 
-        // Extract using ScopedDepends
         let state = ();
         let result =
             ScopedDepends::<TestScopedDependency, ()>::from_request_parts(&mut my_parts, &state)
@@ -126,7 +120,6 @@ mod tests {
         let extracted = result.unwrap();
         assert_eq!(extracted.0, "scoped_value");
 
-        // Verify that the teardown task was added to BackgroundTasks
         let tasks = my_parts.extensions.get::<BackgroundTasks>().unwrap();
         let pending_tasks = tasks.take_tasks();
         assert_eq!(pending_tasks.len(), 1);

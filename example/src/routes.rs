@@ -4,28 +4,28 @@ use crate::models::{
 use crate::AppState;
 use std::fs::OpenOptions;
 use std::io::Write;
-use ukidama::http::StatusCode;
-use ukidama::State;
-use ukidama::{
+use ukiapi::http::StatusCode;
+use ukiapi::State;
+use ukiapi::{
     encode_jwt, error, get, info, jsonable_encoder, post, APIRouter, BackgroundTasks, Depends,
     FileResponse, HTMLResponse, HTTPException, JWTAuth, Projected, RedirectResponse, Response,
     UploadFile, ValidatedJson,
 };
-use ukidama::{websocket, Message, WebSocket, WebSocketUpgrade};
+use ukiapi::{websocket, Message, WebSocket, WebSocketUpgrade};
 
-ukidama::declare_registry!(crate::AppState, ItemsRoute);
-ukidama::declare_registry!(crate::AppState, AuthRoute);
+ukiapi::declare_registry!(crate::AppState, ItemsRoute);
+ukiapi::declare_registry!(crate::AppState, AuthRoute);
 
 #[get("/hello")]
 pub async fn hello() -> &'static str {
     info!("Accessed /hello route.");
-    "Hello from Ukidama!"
+    "Hello from UkiApi!"
 }
 
 #[post("/login", registry = AuthRoute)]
 pub async fn login(
     ValidatedJson(body): ValidatedJson<LoginRequest>,
-) -> Result<ukidama::Json<TokenResponse>, HTTPException> {
+) -> Result<ukiapi::Json<TokenResponse>, HTTPException> {
     info!("Logging in user: {}", body.username);
 
     let expiration = std::time::SystemTime::now()
@@ -52,22 +52,22 @@ pub async fn login(
         )
     })?;
 
-    Ok(ukidama::Json(TokenResponse {
+    Ok(ukiapi::Json(TokenResponse {
         access_token: token,
         token_type: "Bearer".to_string(),
     }))
 }
 
 #[get("/me", registry = AuthRoute)]
-pub async fn me(Depends(claims, _): Depends<JWTAuth<UserClaims>>) -> ukidama::Json<UserClaims> {
-    ukidama::Json(claims)
+pub async fn me(Depends(claims, _): Depends<JWTAuth<UserClaims>>) -> ukiapi::Json<UserClaims> {
+    ukiapi::Json(claims)
 }
 
 #[get("", registry = ItemsRoute)]
 pub async fn list_items(
     State(state): State<AppState>,
-    ukidama::Query(query): ukidama::Query<ListItemsQuery>,
-) -> ukidama::Json<ukidama::Value> {
+    ukiapi::Query(query): ukiapi::Query<ListItemsQuery>,
+) -> ukiapi::Json<ukiapi::Value> {
     info!("Accessed /items route with query: {:?}", query.q);
     let items = state.items.lock().unwrap();
     let limit = query.limit.unwrap_or(10) as usize;
@@ -90,13 +90,13 @@ pub async fn list_items(
 
     results.truncate(limit);
     // Demonstrate jsonable_encoder
-    ukidama::Json(jsonable_encoder(results))
+    ukiapi::Json(jsonable_encoder(results))
 }
 
 #[get("/{id}", registry = ItemsRoute)]
 pub async fn get_item(
     State(state): State<AppState>,
-    ukidama::Path(id): ukidama::Path<i32>,
+    ukiapi::Path(id): ukiapi::Path<i32>,
 ) -> Result<Projected<ItemResponse>, HTTPException> {
     info!("Accessed /items/{} route.", id);
     let items = state.items.lock().unwrap();
@@ -119,7 +119,7 @@ pub async fn get_item(
 pub async fn create_item(
     State(state): State<AppState>,
     ValidatedJson(body): ValidatedJson<ItemCreate>,
-) -> Response<ukidama::Json<ItemResponse>> {
+) -> Response<ukiapi::Json<ItemResponse>> {
     info!("Accessed /items route. Creating item: {}.", body.name);
     let mut items = state.items.lock().unwrap();
     let next_id = items.len() as i32 + 1;
@@ -136,7 +136,7 @@ pub async fn create_item(
 
     Response::new(
         StatusCode::CREATED,
-        ukidama::Json(ItemResponse {
+        ukiapi::Json(ItemResponse {
             id: db_item.id,
             name: db_item.name,
             price: db_item.price,
@@ -154,7 +154,7 @@ pub async fn trigger_error() -> Result<&'static str, HTTPException> {
 }
 
 #[get("/request-info", registry = ItemsRoute)]
-pub async fn request_info(req: ukidama::Request) -> String {
+pub async fn request_info(req: ukiapi::Request) -> String {
     info!(
         "Accessed /request-info route. Method: {}, Path: {}",
         req.method(),
@@ -169,7 +169,7 @@ pub async fn request_info(req: ukidama::Request) -> String {
 
 #[get("/html", registry = ItemsRoute)]
 pub async fn html_example() -> HTMLResponse {
-    HTMLResponse::new("<h1>Hello from Ukidama HTML Response!</h1>")
+    HTMLResponse::new("<h1>Hello from UkiApi HTML Response!</h1>")
 }
 
 #[get("/redirect", registry = ItemsRoute)]
@@ -183,7 +183,7 @@ pub async fn file_example() -> FileResponse {
 }
 
 #[get("/background")]
-pub async fn background_handler(tasks: BackgroundTasks) -> ukidama::Json<ukidama::Value> {
+pub async fn background_handler(tasks: BackgroundTasks) -> ukiapi::Json<ukiapi::Value> {
     info!("Accessed /background route. Scheduling tasks.");
     tasks.add_task(async {
         let mut file = OpenOptions::new()
@@ -209,13 +209,13 @@ pub async fn background_handler(tasks: BackgroundTasks) -> ukidama::Json<ukidama
         file.flush().unwrap();
     });
 
-    ukidama::Json(ukidama::json!({
+    ukiapi::Json(ukiapi::json!({
         "message": "Background tasks scheduled"
     }))
 }
 
 #[post("/upload")]
-pub async fn upload_handler(file: UploadFile) -> ukidama::Json<ukidama::Value> {
+pub async fn upload_handler(file: UploadFile) -> ukiapi::Json<ukiapi::Value> {
     let filename = file
         .filename
         .clone()
@@ -226,12 +226,12 @@ pub async fn upload_handler(file: UploadFile) -> ukidama::Json<ukidama::Value> {
     // 🛡️ Sentinel: Save to temp directory to prevent CWD file overwrite
     let dest = std::env::temp_dir().join(&filename);
     if let Err(e) = file.save(&dest).await {
-        return ukidama::Json(ukidama::json!({
+        return ukiapi::Json(ukiapi::json!({
             "error": format!("Failed to save file: {}", e)
         }));
     }
 
-    ukidama::Json(ukidama::json!({
+    ukiapi::Json(ukiapi::json!({
         "message": "File uploaded successfully",
         "filename": filename,
         "size": size,
@@ -251,7 +251,7 @@ pub fn auth_router() -> APIRouter<AppState> {
 }
 
 #[websocket("/ws")]
-pub async fn ws_echo(ws: WebSocketUpgrade) -> ukidama::response::AxumResponse {
+pub async fn ws_echo(ws: WebSocketUpgrade) -> ukiapi::response::AxumResponse {
     info!("New WebSocket connection request.");
     ws.on_upgrade(handle_socket)
 }

@@ -4,7 +4,7 @@ pub mod middleware;
 pub mod route;
 pub mod router;
 
-pub use api::Ukidama;
+pub use api::UkiApi;
 pub use autodiscover::{DefaultRoute, RegistryEntry};
 pub use axum::Router;
 pub use route::{Routable, Route, RouteAdder};

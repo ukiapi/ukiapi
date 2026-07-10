@@ -2,7 +2,7 @@
 name = "uki"
 version = "0.1.0"
 edition = "2021"
-description = "CLI for Ukidama — run and develop Ukidama projects"
+description = "CLI for UkiApi — run and develop UkiApi projects"
 
 [[bin]]
 name = "uki"

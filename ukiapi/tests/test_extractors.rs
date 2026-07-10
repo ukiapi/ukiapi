@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use ukidama::{get, post, routes, JsonSchema, Query, TestClient, ValidatedJson};
+use ukiapi::{get, post, routes, JsonSchema, Query, TestClient, ValidatedJson};
 use validator::Validate;
 
 #[derive(Debug, Deserialize, Serialize, Validate, JsonSchema)]
@@ -31,16 +31,16 @@ struct BodyResponse {
 }
 
 #[get("/query")]
-async fn query_handler(Query(query): Query<TestQuery>) -> ukidama::Json<QueryResponse> {
-    ukidama::Json(QueryResponse {
+async fn query_handler(Query(query): Query<TestQuery>) -> ukiapi::Json<QueryResponse> {
+    ukiapi::Json(QueryResponse {
         page: query.page,
         name: query.name,
     })
 }
 
 #[post("/body")]
-async fn body_handler(ValidatedJson(body): ValidatedJson<TestBody>) -> ukidama::Json<BodyResponse> {
-    ukidama::Json(BodyResponse {
+async fn body_handler(ValidatedJson(body): ValidatedJson<TestBody>) -> ukiapi::Json<BodyResponse> {
+    ukiapi::Json(BodyResponse {
         title: body.title,
         count: body.count,
     })

@@ -539,7 +539,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "ukidama",
+ "ukiapi",
  "validator",
 ]
 
@@ -2267,7 +2267,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ukidama"
+name = "ukiapi"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -2287,12 +2287,12 @@ dependencies = [
  "tower 0.5.3",
  "tower-http 0.5.2",
  "ts-rs",
- "ukidama-macros",
+ "ukiapi-macros",
  "validator",
 ]
 
 [[package]]
-name = "ukidama-macros"
+name = "ukiapi-macros"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",

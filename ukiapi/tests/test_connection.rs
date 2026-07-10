@@ -1,4 +1,4 @@
-use ukidama::{get, routes, HTTPConnection, TestClient};
+use ukiapi::{get, routes, HTTPConnection, TestClient};
 
 #[get("/client-addr")]
 async fn get_client_addr(conn: HTTPConnection) -> String {

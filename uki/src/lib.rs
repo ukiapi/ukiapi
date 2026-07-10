@@ -2,12 +2,12 @@ use colored::Colorize;
 use std::fs;
 use std::process::{Command, Stdio};
 
-/// Create a new Ukidama project with the given name.
+/// Create a new UkiApi project with the given name.
 /// This will run `cargo init`, add necessary dependencies to `Cargo.toml`,
 /// and create a boilerplate `src/main.rs`.
 pub fn run_new(name: String) {
     println!(
-        "\n  {} Creating new Ukidama project: {}\n",
+        "\n  {} Creating new UkiApi project: {}\n",
         "🚀".cyan(),
         name.bold()
     );
@@ -34,8 +34,8 @@ pub fn run_new(name: String) {
     let mut cargo_toml = fs::read_to_string(&cargo_toml_path).unwrap();
 
     let deps = r#"
-ukidama = { path = "../../ukidama" }
-ukidama-macros = { path = "../../ukidama-macros" }
+ukiapi = { path = "../../ukiapi" }
+ukiapi-macros = { path = "../../ukiapi-macros" }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -54,8 +54,8 @@ ignored = ["schemars", "serde", "serde_json", "validator"]
 
     // 3. Create boilerplate main.rs
     let main_rs_path = format!("{}/src/main.rs", name);
-    let main_rs_content = r#"use ukidama::{routes, ValidatedJson, serve, Json};
-use ukidama::{get, post};
+    let main_rs_content = r#"use ukiapi::{routes, ValidatedJson, serve, Json};
+use ukiapi::{get, post};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use schemars::JsonSchema;
@@ -71,7 +71,7 @@ pub struct HelloRequest {
 
 #[get("/hello")]
 pub async fn hello() -> &'static str {
-    "Hello from Ukidama!"
+    "Hello from UkiApi!"
 }
 
 #[post("/greet")]

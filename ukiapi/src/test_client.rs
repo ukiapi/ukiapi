@@ -3,18 +3,18 @@ use crate::extract::Request;
 use crate::response::AxumResponse;
 use crate::routing::Router;
 use crate::tower::ServiceExt;
-use crate::Ukidama;
+use crate::UkiApi;
 use http_body_util::BodyExt;
 use serde::Serialize;
 
-/// A simple client for testing Ukidama endpoints.
+/// A simple client for testing UkiApi endpoints.
 pub struct TestClient {
     router: Router<()>,
 }
 
 impl TestClient {
-    /// Create a new TestClient from a Ukidama instance and its state.
-    pub fn new<S>(api: Ukidama<S>, state: S) -> Self
+    /// Create a new TestClient from a UkiApi instance and its state.
+    pub fn new<S>(api: UkiApi<S>, state: S) -> Self
     where
         S: Clone + Send + Sync + 'static,
     {

@@ -9,7 +9,7 @@ use uki::run_new;
 #[derive(Parser)]
 #[command(
     name = "uki",
-    about = "Ukidama CLI — develop and run your Ukidama app",
+    about = "UkiApi CLI — develop and run your UkiApi app",
     version,
     propagate_version = true
 )]
@@ -20,7 +20,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Create a new Ukidama project
+    /// Create a new UkiApi project
     New {
         /// Name of the project
         name: String,
@@ -96,7 +96,7 @@ fn print_banner(mode: &str, host: &str, port: u16, reload: bool) {
     println!();
     println!(
         "  {}  {}",
-        "🦀 Ukidama".bold(),
+        "🦀 UkiApi".bold(),
         format!("v{}", env!("CARGO_PKG_VERSION")).dimmed()
     );
     println!(
@@ -131,8 +131,8 @@ fn print_banner(mode: &str, host: &str, port: u16, reload: bool) {
 /// Build the list of env vars to inject into cargo run / cargo watch.
 fn build_env(host: &str, port: u16, workers: usize) -> Vec<(String, String)> {
     let mut env = vec![
-        ("UKIDAMA_HOST".into(), host.to_string()),
-        ("UKIDAMA_PORT".into(), port.to_string()),
+        ("UKIAPI_HOST".into(), host.to_string()),
+        ("UKIAPI_PORT".into(), port.to_string()),
     ];
     if workers > 0 {
         env.push(("TOKIO_WORKER_THREADS".into(), workers.to_string()));

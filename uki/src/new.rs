@@ -2,7 +2,7 @@ use clap::Parser;
 use uki::run_new;
 
 #[derive(Parser)]
-#[command(name = "uki-new", about = "Create a new Ukidama project", version)]
+#[command(name = "uki-new", about = "Create a new UkiApi project", version)]
 struct Cli {
     /// Name of the project
     name: String,
