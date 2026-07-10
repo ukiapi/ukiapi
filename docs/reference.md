@@ -111,10 +111,10 @@ routes![AppState, route1(), route2()]
 
 | Command | Description |
 |---------|-------------|
-| `uki new <name>` | Create a new project |
-| `uki dev` | Run in development mode |
-| `uki dev --reload` | Run with hot reload |
-| `uki run` | Run the server |
+| `ukiapi new <name>` | Create a new project |
+| `ukiapi dev` | Run in development mode |
+| `ukiapi dev --reload` | Run with hot reload |
+| `ukiapi run` | Run the server |
 
 ## Error Handling
 

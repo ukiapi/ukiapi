@@ -1,5 +1,5 @@
 [package]
-name = "uki"
+name = "ukiapi-cli"
 version = "0.0.1"
 edition = "2021"
 description = "CLI for UkiApi — run and develop UkiApi projects"
@@ -9,11 +9,11 @@ homepage = "https://github.com/ukiapi/ukiapi"
 keywords = ["cli", "web", "api", "development"]
 
 [[bin]]
-name = "uki"
+name = "ukiapi"
 path = "src/main.rs"
 
 [[bin]]
-name = "uki-new"
+name = "ukiapi-new"
 path = "src/new.rs"
 
 [dependencies]

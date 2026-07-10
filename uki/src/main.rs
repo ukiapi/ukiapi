@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 use colored::Colorize;
 use std::env;
 use std::process::{Command, Stdio};
-use uki::run_new;
+use ukiapi_cli::run_new;
 
 // ─── CLI definition ──────────────────────────────────────────────────────────
 
@@ -175,7 +175,7 @@ fn detect_bin() -> String {
         .and_then(|p| p.file_name().map(|n| n.to_string_lossy().to_string()))
         .unwrap_or_default();
 
-    let cli_bins = ["uki", "uki-new"];
+    let cli_bins = ["ukiapi", "ukiapi-new"];
 
     let mut bins: Vec<String> = Vec::new();
     for pkg in packages {

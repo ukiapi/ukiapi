@@ -22,26 +22,26 @@
 ### 1. Install the CLI
 
 ```bash
-cargo install uki
+cargo install ukiapi
 ```
 
 ### 2. Create a new project
 
 ```bash
-uki new my-api
+ukiapi new my-api
 cd my-api
 ```
 
 ### 3. Run in development mode
 
 ```bash
-uki dev
+ukiapi dev
 ```
 
 Or with hot reload:
 
 ```bash
-uki dev --reload
+ukiapi dev --reload
 ```
 
 Your API will be running at `http://localhost:3000`, with interactive docs at `http://localhost:3000/docs`.
@@ -91,7 +91,7 @@ async fn main() {
 
 - `ukiapi`: Core library providing routing, extractors, and types.
 - `ukiapi-macros`: Procedural macros for routing and models.
-- `uki`: Command-line interface for managing UkiApi projects.
+- `ukiapi` (CLI): Command-line interface for managing UkiApi projects.
 - `example`: A reference implementation demonstrating all features.
 
 ## 🤝 Contributing

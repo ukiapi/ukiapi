@@ -11,14 +11,14 @@
 
 ```bash
 # Install the CLI
-cargo install uki
+cargo install ukiapi
 
 # Create a new project
-uki new my-api
+ukiapi new my-api
 cd my-api
 
 # Run in development mode
-uki dev
+ukiapi dev
 ```
 
 Your API will be running at `http://localhost:3000`, with interactive docs at `http://localhost:3000/docs`.

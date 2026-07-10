@@ -1,8 +1,8 @@
 use clap::Parser;
-use uki::run_new;
+use ukiapi_cli::run_new;
 
 #[derive(Parser)]
-#[command(name = "uki-new", about = "Create a new UkiApi project", version)]
+#[command(name = "ukiapi-new", about = "Create a new UkiApi project", version)]
 struct Cli {
     /// Name of the project
     name: String,

@@ -11,7 +11,7 @@ A complete full-stack template with SQLite, JWT authentication, and ML inference
 ```bash
 git clone git@github.com:ukiapi/full-stack-ukiapi-template.git
 cd full-stack-ukiapi-template/backend
-uki dev
+ukiapi dev
 ```
 
 **Features:**
@@ -29,9 +29,9 @@ uki dev
 A minimal API template for getting started quickly.
 
 ```bash
-uki new my-api
+ukiapi new my-api
 cd my-api
-uki dev
+ukiapi dev
 ```
 
 ## Examples

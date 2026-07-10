@@ -100,5 +100,5 @@ async fn main() {
     );
     println!("  {} To get started:", "→".cyan());
     println!("    cd {}", name);
-    println!("    uki dev\n");
+    println!("    ukiapi dev\n");
 }

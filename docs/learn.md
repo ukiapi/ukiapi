@@ -10,7 +10,7 @@ Tutorials and guides to help you get started with UkiApi.
 ## Installation
 
 ```bash
-cargo install uki
+cargo install ukiapi
 ```
 
 ## Tutorial 1: Hello World
@@ -18,7 +18,7 @@ cargo install uki
 ### Step 1: Create a new project
 
 ```bash
-uki new hello-api
+ukiapi new hello-api
 cd hello-api
 ```
 
@@ -43,7 +43,7 @@ async fn main() {
 ### Step 3: Run the server
 
 ```bash
-uki dev
+ukiapi dev
 ```
 
 Visit `http://localhost:3000/hello` to see your response.
