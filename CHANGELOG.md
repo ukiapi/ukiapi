@@ -2,11 +2,13 @@
 
 ## v0.0.1
 
+
 ### Changed
 - **BREAKING:** Rename project from `ukidama` to `ukiapi`
 - Update all package names: `ukiapi`, `ukiapi-macros`
 - Update environment variables: `UKIAPI_HOST`, `UKIAPI_PORT`
 - Update CLI banners and help text to reference UkiApi
+- we return to 0.0.1 due to change name 
 
 ### Added
 - MIT License file
