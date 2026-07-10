@@ -2,6 +2,13 @@
 name = "ukiapi"
 version = "0.0.1"
 edition = "2021"
+description = "A high-performance Rust web framework inspired by FastAPI"
+license = "MIT"
+repository = "https://github.com/ukiapi/ukiapi"
+homepage = "https://github.com/ukiapi/ukiapi"
+readme = "README.md"
+keywords = ["web", "api", "framework", "http", "async"]
+categories = ["web-programming", "asynchronous"]
 
 [dependencies]
 ukiapi-macros = { path = "../ukiapi-macros" }

@@ -10,7 +10,7 @@ Tutorials and guides to help you get started with UkiApi.
 ## Installation
 
 ```bash
-cargo install --git ssh://git@github.com:ukiapi/ukiapi.git uki
+cargo install uki
 ```
 
 ## Tutorial 1: Hello World

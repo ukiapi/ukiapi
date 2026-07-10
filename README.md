@@ -22,7 +22,7 @@
 ### 1. Install the CLI
 
 ```bash
-cargo install --git ssh://git@github.com/ukiapi/ukiapi.git uki
+cargo install uki
 ```
 
 ### 2. Create a new project

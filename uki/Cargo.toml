@@ -3,6 +3,10 @@ name = "uki"
 version = "0.0.1"
 edition = "2021"
 description = "CLI for UkiApi — run and develop UkiApi projects"
+license = "MIT"
+repository = "https://github.com/ukiapi/ukiapi"
+homepage = "https://github.com/ukiapi/ukiapi"
+keywords = ["cli", "web", "api", "development"]
 
 [[bin]]
 name = "uki"

@@ -11,7 +11,7 @@
 
 ```bash
 # Install the CLI
-cargo install --git ssh://git@github.com/ukiapi/ukiapi.git uki
+cargo install uki
 
 # Create a new project
 uki new my-api
