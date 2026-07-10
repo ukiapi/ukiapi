@@ -49,7 +49,7 @@ Your API will be running at `http://localhost:3000`, with interactive docs at `h
 ## 📖 Example
 
 ```rust
-use ukiapi::{get, post, routes, serve, ValidatedJson};
+use ukiapi::{get, post, routes, ValidatedJson};
 use ukiapi::Json;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
@@ -74,7 +74,7 @@ pub async fn create_item(ValidatedJson(payload): ValidatedJson<CreateItem>) -> J
     Json(json!({ "item": payload.name }))
 }
 
-#[tokio::main]
+#[ukiapi::main]
 async fn main() {
     let state = AppState {};
 
