@@ -1,5 +1,8 @@
 # 🦀 UkiApi 🦀 
 
+[![Tests](https://github.com/ukiapi/ukiapi/actions/workflows/ci.yml/badge.svg)](https://github.com/ukiapi/ukiapi/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **UkiApi** is a high-performance web framework for Rust, built on top of [Axum](https://github.com/tokio-rs/axum), focusing on ergonomics, automatic documentation, and type-safe data validation.
 
 ## ✨ Features
@@ -90,6 +93,10 @@ async fn main() {
 - `ukiapi-macros`: Procedural macros for routing and models.
 - `uki`: Command-line interface for managing UkiApi projects.
 - `example`: A reference implementation demonstrating all features.
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 ## ⚖️ License
 
