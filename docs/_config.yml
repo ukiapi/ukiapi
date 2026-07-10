@@ -1,0 +1,27 @@
+title: UkiApi
+description: A high-performance Rust web framework
+theme: jekyll-theme-minimal
+
+plugins:
+  - jekyll-seo-tag
+
+header_pages:
+  - index.md
+  - introduction.md
+  - features.md
+  - learn.md
+  - reference.md
+  - resources.md
+  - release-notes.md
+  - about.md
+
+exclude:
+  - target/
+  - Cargo.*
+  - Makefile
+  - scripts/
+  - .github/
+  - example/
+  - uki/
+  - ukiapi/
+  - ukiapi-macros/
