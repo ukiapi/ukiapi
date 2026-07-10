@@ -1,20 +1,21 @@
 pub mod auth;
 pub mod background_tasks;
 pub mod body;
-pub mod features;
 pub mod connection;
 pub mod dependencies;
 pub mod docs;
 pub mod extract;
 pub mod extractors;
+pub mod features;
 pub mod handler;
+pub mod health;
 pub mod http;
 pub mod lifecycle;
 pub mod middleware;
 pub mod mount;
+pub mod projection;
 pub mod response;
 pub mod responses;
-pub mod projection;
 pub mod routing;
 pub mod server;
 pub mod static_files;
@@ -26,11 +27,11 @@ pub mod ws;
 
 pub use axum;
 pub use inventory;
-pub use ukidama_macros::{delete, get, model, patch, post, put, websocket};
 pub use schemars::JsonSchema;
 pub use serde::{Deserialize, Serialize};
 pub use serde_json::{json, Value};
 pub use ts_rs;
+pub use ukidama_macros::{delete, get, model, patch, post, put, websocket};
 pub use validator::Validate;
 pub use ws::{Message, WebSocket, WebSocketUpgrade};
 
@@ -38,10 +39,10 @@ pub use auth::{decode_jwt, encode_jwt, HTTPBearer, JWTAuth, OAuth2PasswordBearer
 pub use background_tasks::BackgroundTasks;
 pub use connection::HTTPConnection;
 pub use dependencies::{security, Dependency, Depends, Security};
-pub use features::scoped_di::{ScopedDependency, ScopedDepends, ScopedDiError};
 pub use env_logger;
 pub use extract::{Path, Request, State};
 pub use extractors::{Query, ValidatedJson};
+pub use features::scoped_di::{ScopedDependency, ScopedDepends, ScopedDiError};
 pub use log::{error, info};
 pub use projection::Projected;
 pub use response::{HTTPException, Json, Response};

@@ -19,6 +19,7 @@ pub trait Dependency<S>: Send + Sync + 'static {
 }
 
 /// An extractor that resolves a dependency and caches the result.
+#[derive(Debug)]
 pub struct Depends<D: Dependency<S>, S = ()>(pub D::Output, pub PhantomData<S>);
 
 /// Internal wrapper for caching resolved dependencies in request extensions.
@@ -81,4 +82,95 @@ where
 /// Helper to create a Security extractor.
 pub fn security<D: Dependency<S>, S>() -> Security<D, S> {
     Security(PhantomData)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::http::request::Parts;
+
+    struct TestDependency;
+
+    impl Dependency<()> for TestDependency {
+        type Output = String;
+
+        async fn resolve(_parts: &mut Parts, _state: &()) -> Result<String, HTTPException> {
+            Ok("resolved_value".to_string())
+        }
+    }
+
+    #[derive(Debug)]
+    struct FailingDependency;
+
+    impl Dependency<()> for FailingDependency {
+        type Output = String;
+
+        async fn resolve(_parts: &mut Parts, _state: &()) -> Result<String, HTTPException> {
+            Err(HTTPException::new(
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                "Dependency failed",
+            ))
+        }
+    }
+
+    fn create_test_parts() -> Parts {
+        let (parts, _) = axum::http::Request::builder()
+            .body(())
+            .unwrap()
+            .into_parts();
+        parts
+    }
+
+    #[tokio::test]
+    async fn test_depends_resolves_dependency() {
+        let mut parts = create_test_parts();
+        let result = Depends::<TestDependency, ()>::from_request_parts(&mut parts, &()).await;
+        assert!(result.is_ok());
+        let Depends(value, _) = result.unwrap();
+        assert_eq!(value, "resolved_value");
+    }
+
+    #[tokio::test]
+    async fn test_depends_caches_result() {
+        let mut parts = create_test_parts();
+        let result1 = Depends::<TestDependency, ()>::from_request_parts(&mut parts, &()).await;
+        assert!(result1.is_ok());
+
+        let result2 = Depends::<TestDependency, ()>::from_request_parts(&mut parts, &()).await;
+        assert!(result2.is_ok());
+
+        let Depends(value1, _) = result1.unwrap();
+        let Depends(value2, _) = result2.unwrap();
+        assert_eq!(value1, value2);
+    }
+
+    #[tokio::test]
+    async fn test_depends_propagates_error() {
+        let mut parts = create_test_parts();
+        let result = Depends::<FailingDependency, ()>::from_request_parts(&mut parts, &()).await;
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().status_code,
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR
+        );
+    }
+
+    #[tokio::test]
+    async fn test_security_wraps_depends() {
+        let mut parts = create_test_parts();
+        let result = Security::<TestDependency, ()>::from_request_parts(&mut parts, &()).await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_security_propagates_error() {
+        let mut parts = create_test_parts();
+        let result = Security::<FailingDependency, ()>::from_request_parts(&mut parts, &()).await;
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_security_helper() {
+        let _security = security::<TestDependency, ()>();
+    }
 }

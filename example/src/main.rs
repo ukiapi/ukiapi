@@ -2,11 +2,11 @@ use axum::middleware::Next;
 use axum::response::IntoResponse;
 use example::routes::*;
 use example::AppState;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use ukidama::routing::middleware::layers::CorsLayer;
 use ukidama::routing::middleware::MiddlewareExt;
 use ukidama::Request;
-use std::sync::{Arc, Mutex};
-use std::time::Duration;
 
 async fn logging_middleware(req: Request, next: Next) -> axum::response::Response {
     println!(

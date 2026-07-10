@@ -2,11 +2,11 @@ use crate::background_tasks::BackgroundTasks;
 use crate::extract::FromRequestParts;
 use crate::http::request::Parts;
 use crate::response::HTTPException;
+use axum::http::StatusCode;
 use futures::future::BoxFuture;
+use std::fmt::Display;
 use std::future::Future;
 use std::marker::PhantomData;
-use std::fmt::Display;
-use axum::http::StatusCode;
 
 /// An error that might occur when resolving a scoped dependency.
 pub enum ScopedDiError {
@@ -64,7 +64,9 @@ where
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
         // Resolve the scoped dependency
-        let (resolved_value, teardown_future) = D::resolve(parts, state).await.map_err(Into::<HTTPException>::into)?;
+        let (resolved_value, teardown_future) = D::resolve(parts, state)
+            .await
+            .map_err(Into::<HTTPException>::into)?;
 
         // Retrieve BackgroundTasks or insert it if not present
         let background_tasks = if let Some(tasks) = parts.extensions.get::<BackgroundTasks>() {
@@ -85,9 +87,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use axum::http::Request;
-    use crate::extract::FromRequestParts;
     use crate::background_tasks::BackgroundTasks;
+    use crate::extract::FromRequestParts;
+    use axum::http::Request;
     use futures::future::BoxFuture;
 
     struct TestScopedDependency;
@@ -116,7 +118,9 @@ mod tests {
 
         // Extract using ScopedDepends
         let state = ();
-        let result = ScopedDepends::<TestScopedDependency, ()>::from_request_parts(&mut my_parts, &state).await;
+        let result =
+            ScopedDepends::<TestScopedDependency, ()>::from_request_parts(&mut my_parts, &state)
+                .await;
 
         assert!(result.is_ok());
         let extracted = result.unwrap();

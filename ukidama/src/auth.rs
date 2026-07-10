@@ -109,3 +109,127 @@ where
         HTTPBearer::extract(parts)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::http::header::{HeaderMap, HeaderValue};
+    use axum::http::request::Parts;
+
+    #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+    struct TestClaims {
+        sub: String,
+        exp: usize,
+    }
+
+    fn create_test_parts(headers: HeaderMap) -> Parts {
+        let mut request = axum::http::Request::builder().body(()).unwrap();
+        *request.headers_mut() = headers;
+        let (parts, _) = request.into_parts();
+        parts
+    }
+
+    #[test]
+    fn test_http_bearer_extract_valid() {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            AUTHORIZATION,
+            HeaderValue::from_static("Bearer test_token_123"),
+        );
+        let parts = create_test_parts(headers);
+        let token = HTTPBearer::extract(&parts).unwrap();
+        assert_eq!(token, "test_token_123");
+    }
+
+    #[test]
+    fn test_http_bearer_extract_missing_header() {
+        let parts = create_test_parts(HeaderMap::new());
+        let result = HTTPBearer::extract(&parts);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().status_code, StatusCode::UNAUTHORIZED);
+    }
+
+    #[test]
+    fn test_http_bearer_extract_wrong_format() {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            AUTHORIZATION,
+            HeaderValue::from_static("Basic dXNlcjpwYXNz"),
+        );
+        let parts = create_test_parts(headers);
+        let result = HTTPBearer::extract(&parts);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().status_code, StatusCode::UNAUTHORIZED);
+    }
+
+    #[test]
+    fn test_http_bearer_extract_with_extra_spaces() {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            AUTHORIZATION,
+            HeaderValue::from_static("Bearer  token_with_spaces"),
+        );
+        let parts = create_test_parts(headers);
+        let token = HTTPBearer::extract(&parts).unwrap();
+        assert_eq!(token, "token_with_spaces");
+    }
+
+    #[test]
+    fn test_encode_decode_jwt_roundtrip() {
+        let claims = TestClaims {
+            sub: "user123".to_string(),
+            exp: 9999999999, // Far future
+        };
+        let secret = "test_secret";
+        let token = encode_jwt(&claims, secret).unwrap();
+        let decoded: TestClaims = decode_jwt(&token, secret).unwrap();
+        assert_eq!(decoded.sub, "user123");
+        assert_eq!(decoded.exp, 9999999999);
+    }
+
+    #[test]
+    fn test_decode_jwt_wrong_secret() {
+        let claims = TestClaims {
+            sub: "user123".to_string(),
+            exp: 9999999999, // Far future
+        };
+        let token = encode_jwt(&claims, "correct_secret").unwrap();
+        let result = decode_jwt::<TestClaims>(&token, "wrong_secret");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_encode_jwt_produces_valid_token() {
+        let claims = TestClaims {
+            sub: "test_user".to_string(),
+            exp: 9999999999, // Far future
+        };
+        let token = encode_jwt(&claims, "secret").unwrap();
+        assert!(!token.is_empty());
+        assert!(token.contains('.'));
+    }
+
+    #[test]
+    fn test_oauth2_password_bearer_new() {
+        let oauth = OAuth2PasswordBearer::new("/api/login");
+        assert_eq!(oauth.token_url, "/api/login");
+    }
+
+    #[test]
+    fn test_http_bearer_extract_empty_token() {
+        let mut headers = HeaderMap::new();
+        headers.insert(AUTHORIZATION, HeaderValue::from_static("Bearer "));
+        let parts = create_test_parts(headers);
+        let token = HTTPBearer::extract(&parts).unwrap();
+        assert!(token.is_empty());
+    }
+
+    #[test]
+    fn test_http_bearer_extract_case_insensitive() {
+        let mut headers = HeaderMap::new();
+        headers.insert(AUTHORIZATION, HeaderValue::from_static("bearer my_token"));
+        let parts = create_test_parts(headers);
+        let token = HTTPBearer::extract(&parts).unwrap();
+        assert_eq!(token, "my_token");
+    }
+}

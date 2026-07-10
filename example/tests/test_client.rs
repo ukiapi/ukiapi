@@ -1,7 +1,7 @@
 use example::routes::*;
 use example::AppState;
-use ukidama::TestClient;
 use std::sync::{Arc, Mutex};
+use ukidama::TestClient;
 
 #[tokio::test]
 async fn test_hello_endpoint() {

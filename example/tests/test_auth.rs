@@ -1,9 +1,9 @@
 use example::models::{LoginRequest, TokenResponse, UserClaims};
 use example::routes::*;
 use example::AppState;
+use std::sync::{Arc, Mutex};
 use ukidama::test_client::ResponseExt;
 use ukidama::TestClient;
-use std::sync::{Arc, Mutex};
 
 #[tokio::test]
 async fn test_auth_flow() {

@@ -23,7 +23,7 @@
 23: [x] Add support for dynamic response projection (runtime Pydantic-like field include/exclude).
 24: [ ] Create a developer terminal dashboard (TUI) or web console in `uki` for live API metrics.
 25: [ ] Reach adequate test coverage (unit tests in core lib, integration tests, CI includes clippy/audit).
-26: [ ] Add health check endpoint (readiness/liveness probes for K8s deployment).
+26: [x] Add health check endpoint (readiness/liveness probes for K8s deployment).
 27: [ ] Add security headers middleware (CSP, HSTS, X-Frame-Options, etc.) and rate limiting.
 28: [ ] Fix hardcoded JWT secret default (`"secret"`) — panic or require explicit config instead.
 29: [ ] Add config file support (beyond env vars) and secrets management.

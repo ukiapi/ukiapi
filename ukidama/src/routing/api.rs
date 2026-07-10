@@ -2,6 +2,7 @@ use crate::background_tasks::BackgroundTasks;
 use crate::dependencies::{Dependency, Depends};
 use crate::docs::{docs_router, finalize_openapi_spec, process_openapi_schema};
 use crate::extract::{FromRequestParts, Request, State};
+use crate::health;
 use crate::lifecycle::LifecycleHandler;
 use crate::middleware::{self, Next};
 use crate::mount::Mount;
@@ -57,6 +58,15 @@ where
     pub fn version(mut self, version: &str) -> Self {
         self.version = version.to_string();
         self
+    }
+
+    /// Register a health check endpoint at `/health` (GET).
+    ///
+    /// Responds with JSON containing status, title, version, and uptime.
+    /// Useful for K8s readiness/liveness probes.
+    pub fn health_check(self) -> Self {
+        health::init(&self.title, &self.version);
+        self.route(Route::<S>::get("/health", health::handler))
     }
 
     pub fn on_startup<F, Fut>(mut self, handler: F) -> Self
