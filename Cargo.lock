@@ -2288,13 +2288,24 @@ dependencies = [
  "tower 0.5.3",
  "tower-http 0.5.2",
  "ts-rs",
- "ukiapi-macros",
+ "ukiapi-macros 0.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "validator",
 ]
 
 [[package]]
 name = "ukiapi-macros"
 version = "0.0.1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "ukiapi-macros"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e43c31c4befeb48b62d18ef25bd8c9f88c0a4fea293b76bdf00f1e836ac44c1"
 dependencies = [
  "proc-macro2",
  "quote",

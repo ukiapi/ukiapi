@@ -11,7 +11,7 @@ keywords = ["web", "api", "framework", "http", "async"]
 categories = ["web-programming", "asynchronous"]
 
 [dependencies]
-ukiapi-macros = { path = "../ukiapi-macros" }
+ukiapi-macros = "0.0.1"
 axum = { version = "0.8", features = ["multipart", "ws"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
