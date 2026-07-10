@@ -202,3 +202,51 @@ pub fn patch(args: TokenStream, input: TokenStream) -> TokenStream {
 pub fn websocket(args: TokenStream, input: TokenStream) -> TokenStream {
     route_macro(args, input, "websocket")
 }
+
+/// Macro to define the main entry point for a UkiApi application.
+///
+/// Sets up the tokio runtime, environment variables, and logger.
+///
+/// # Example
+/// ```rust,ignore
+/// use ukiapi::{get, routes};
+///
+/// #[get("/hello")]
+/// async fn hello() -> &'static str {
+///     "Hello from UkiApi!"
+/// }
+///
+/// #[ukiapi::main]
+/// async fn main() {
+///     routes![(),
+///         hello_route().with_state::<()>()
+///     ]
+///     .serve(())
+///     .await;
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn main(_args: TokenStream, input: TokenStream) -> TokenStream {
+    let func = parse_macro_input!(input as ItemFn);
+    let block = &func.block;
+    let sig = &func.sig;
+    let attrs = &func.attrs;
+    let vis = &func.vis;
+
+    let expanded = quote! {
+        #[tokio::main]
+        #(#attrs)*
+        #vis #sig {
+            if std::env::var("UKIAPI_HOST").is_err() {
+                std::env::set_var("UKIAPI_HOST", "127.0.0.1");
+            }
+            if std::env::var("UKIAPI_PORT").is_err() {
+                std::env::set_var("UKIAPI_PORT", "3000");
+            }
+            env_logger::init();
+
+            #block
+        }
+    };
+    expanded.into()
+}

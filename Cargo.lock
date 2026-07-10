@@ -535,6 +535,7 @@ name = "example"
 version = "0.0.1"
 dependencies = [
  "axum",
+ "env_logger",
  "schemars",
  "serde",
  "serde_json",

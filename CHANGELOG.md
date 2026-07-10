@@ -14,6 +14,7 @@
 - MIT License file
 - CI badge and license badge in README
 - Contributing guidelines (CONTRIBUTING.md)
+- `#[ukiapi::main]` macro to simplify main function setup
 - Health check endpoint for K8s readiness/liveness probes
 - Scoped Dependency Injection support
 - Dynamic response projection with field inclusion/exclusion

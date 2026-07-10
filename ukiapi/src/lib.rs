@@ -31,7 +31,7 @@ pub use schemars::JsonSchema;
 pub use serde::{Deserialize, Serialize};
 pub use serde_json::{json, Value};
 pub use ts_rs;
-pub use ukiapi_macros::{delete, get, model, patch, post, put, websocket};
+pub use ukiapi_macros::{delete, get, main, model, patch, post, put, websocket};
 pub use validator::Validate;
 pub use ws::{Message, WebSocket, WebSocketUpgrade};
 

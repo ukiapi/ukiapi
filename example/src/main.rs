@@ -22,7 +22,7 @@ async fn logging_middleware(req: Request, next: Next) -> axum::response::Respons
     response.into_response()
 }
 
-#[tokio::main]
+#[ukiapi::main]
 async fn main() {
     let state = AppState {
         items: Arc::new(Mutex::new(Vec::new())),
