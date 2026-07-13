@@ -19,7 +19,8 @@ impl HTTPBearer {
                 HTTPException::new(StatusCode::UNAUTHORIZED, "Missing Authorization header")
             })?;
 
-        if !auth_header.to_lowercase().starts_with("bearer ") {
+        // ⚡ Bolt: Avoid unnecessary allocation by using eq_ignore_ascii_case instead of to_lowercase
+        if !auth_header.get(..7).is_some_and(|s| s.eq_ignore_ascii_case("bearer ")) {
             return Err(HTTPException::new(
                 StatusCode::UNAUTHORIZED,
                 "Invalid Authorization header format. Expected 'Bearer <token>'",
