@@ -41,7 +41,11 @@ where
         })? {
             let filename = field.file_name().map(|s| {
                 let s = s.replace('\\', "/");
-                s.rsplit('/').next().unwrap_or(&s).to_string()
+                std::path::Path::new(&s)
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| "unknown.txt".to_string())
             });
             let content_type = field.content_type().map(|s| s.to_string());
             let content = field.bytes().await.map_err(|e| {
