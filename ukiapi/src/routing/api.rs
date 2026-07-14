@@ -138,7 +138,7 @@ where
         let mut paths = Map::new();
         let mut components_schemas = Map::new();
 
-        for route in self.routes {
+        for mut route in self.routes {
             let path_key = &route.path;
             let method = route.method.to_lowercase();
             let path_item = paths
@@ -148,10 +148,10 @@ where
             if !route.tags.is_empty() {
                 operation["tags"] = json!(route.tags);
             }
-            if let Some(schema) = &route.response_schema {
+            if let Some(schema) = route.response_schema.take() {
                 operation["responses"]["200"]["content"] = json!({"application/json": {"schema": process_openapi_schema(schema, &mut components_schemas)}});
             }
-            if let Some(schema) = &route.query_schema {
+            if let Some(schema) = route.query_schema.take() {
                 let schema = process_openapi_schema(schema, &mut components_schemas);
                 if let Some(props) = schema.get("properties").and_then(|p| p.as_object()) {
                     let req = schema
@@ -166,7 +166,7 @@ where
                     operation["parameters"] = json!(parameters);
                 }
             }
-            if let Some(schema) = &route.request_schema {
+            if let Some(schema) = route.request_schema.take() {
                 operation["requestBody"] = json!({"required": true, "content": {"application/json": {"schema": process_openapi_schema(schema, &mut components_schemas)}}});
             }
             path_item[&method] = operation;
