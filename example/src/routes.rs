@@ -119,7 +119,7 @@ pub async fn get_item(
 pub async fn create_item(
     State(state): State<AppState>,
     ValidatedJson(body): ValidatedJson<ItemCreate>,
-) -> Response<ukiapi::Json<ItemResponse>> {
+) -> Result<Response<ukiapi::Json<ItemResponse>>, HTTPException> {
     info!("Accessed /items route. Creating item: {}.", body.name);
     let mut items = state.items.lock().unwrap();
     let next_id = items.len() as i32 + 1;
@@ -128,20 +128,21 @@ pub async fn create_item(
         id: next_id,
         name: body.name.clone(),
         price: body.price,
-        internal_secret: std::env::var("INTERNAL_SECRET")
-            .unwrap_or_else(|_| "development_secret".to_string()),
+        internal_secret: std::env::var("INTERNAL_SECRET").map_err(|_| {
+            HTTPException::new(StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL_SECRET environment variable is not set")
+        })?,
     };
 
     items.push(db_item.clone());
 
-    Response::new(
+    Ok(Response::new(
         StatusCode::CREATED,
         ukiapi::Json(ItemResponse {
             id: db_item.id,
             name: db_item.name,
             price: db_item.price,
         }),
-    )
+    ))
 }
 
 #[get("/error")]
