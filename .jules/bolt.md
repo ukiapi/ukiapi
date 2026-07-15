@@ -1,0 +1,3 @@
+## 2024-11-20 - Lazy Iterators for Memory Optimization
+**Learning:** Found a common anti-pattern where a Rust iterator was performing `.map()` (which included expensive string allocations via `.clone()`) and `.collect()` *before* truncating the vector to a limit. Because iterators in Rust are lazy, calling `.take(limit)` *before* `.map()` defers allocations, restricting expensive cloning only to the items that actually need it.
+**Action:** Always verify if `.truncate()` or slice limits on vectors can be replaced with `.take()` placed strategically earlier in an iterator chain to avoid unnecessary processing and memory allocation.
