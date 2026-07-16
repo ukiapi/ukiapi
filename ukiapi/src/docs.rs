@@ -60,11 +60,9 @@ pub fn process_openapi_schema(
 ) -> Value {
     let mut schema_clone = schema.clone();
     if let Some(obj) = schema_clone.as_object_mut() {
-        if let Some(defs) = obj.remove("definitions") {
-            if let Some(defs_obj) = defs.as_object() {
-                for (k, v) in defs_obj {
-                    components_schemas.insert(k.clone(), v.clone());
-                }
+        if let Some(Value::Object(defs_obj)) = obj.remove("definitions") {
+            for (k, v) in defs_obj {
+                components_schemas.insert(k, v);
             }
         }
     }
