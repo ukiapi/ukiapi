@@ -40,15 +40,17 @@ pub async fn login(
     };
 
     let secret = std::env::var("JWT_SECRET").map_err(|_| {
+        error!("JWT_SECRET environment variable is not set");
         HTTPException::new(
             StatusCode::INTERNAL_SERVER_ERROR,
-            "JWT_SECRET environment variable is not set",
+            "Internal Server Error",
         )
     })?;
     let token = encode_jwt(&claims, &secret).map_err(|e| {
+        error!("Failed to generate token: {}", e);
         HTTPException::new(
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Failed to generate token: {}", e),
+            "Internal Server Error",
         )
     })?;
 
@@ -119,29 +121,36 @@ pub async fn get_item(
 pub async fn create_item(
     State(state): State<AppState>,
     ValidatedJson(body): ValidatedJson<ItemCreate>,
-) -> Response<ukiapi::Json<ItemResponse>> {
+) -> Result<Response<ukiapi::Json<ItemResponse>>, HTTPException> {
     info!("Accessed /items route. Creating item: {}.", body.name);
     let mut items = state.items.lock().unwrap();
     let next_id = items.len() as i32 + 1;
+
+    let internal_secret = std::env::var("INTERNAL_SECRET").map_err(|_| {
+        error!("INTERNAL_SECRET environment variable is not set");
+        HTTPException::new(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Internal Server Error",
+        )
+    })?;
 
     let db_item = ItemDb {
         id: next_id,
         name: body.name.clone(),
         price: body.price,
-        internal_secret: std::env::var("INTERNAL_SECRET")
-            .unwrap_or_else(|_| "development_secret".to_string()),
+        internal_secret,
     };
 
     items.push(db_item.clone());
 
-    Response::new(
+    Ok(Response::new(
         StatusCode::CREATED,
         ukiapi::Json(ItemResponse {
             id: db_item.id,
             name: db_item.name,
             price: db_item.price,
         }),
-    )
+    ))
 }
 
 #[get("/error")]
