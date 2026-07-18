@@ -30,10 +30,16 @@ impl std::error::Error for HTTPException {}
 
 impl IntoResponse for HTTPException {
     fn into_response(self) -> AxumResponse {
+        let safe_detail = if self.status_code.is_server_error() {
+            "Internal Server Error".to_string()
+        } else {
+            self.detail.clone()
+        };
+
         (
             self.status_code,
             Json(json!({
-                "detail": self.detail,
+                "detail": safe_detail,
             })),
         )
             .into_response()
