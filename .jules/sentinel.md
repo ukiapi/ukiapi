@@ -1,3 +1,7 @@
+## 2024-07-25 - Prevent Information Exposure in Dependency Injection
+**Vulnerability:** Internal error details and `type_name::<D>()` were being passed directly to the client when a scoped dependency failed to resolve.
+**Learning:** The `Into<HTTPException>` implementation for `ScopedDiError` was returning the raw `msg` generated from `format!("{:?}", err)` in a 500 error response.
+**Prevention:** Map internal errors to generic error messages like 'Internal server error' before responding to the client to avoid leaking infrastructure details.
 ## 2024-05-24 - Prevent Info Leakage in HTTPException
 **Vulnerability:** Internal error details and dependency injection contexts were being exposed to clients through `HTTPException`'s JSON response for HTTP 500 errors.
 **Learning:** The `IntoResponse` implementation for `HTTPException` directly serialized `self.detail` regardless of the status code, failing to distinguish between safe client-facing errors (4xx) and sensitive internal errors (5xx).
