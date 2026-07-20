@@ -77,7 +77,7 @@ where
         let secret = std::env::var("JWT_SECRET").map_err(|_| {
             HTTPException::new(
                 StatusCode::INTERNAL_SERVER_ERROR,
-                "JWT_SECRET environment variable is not set",
+                "Server misconfiguration",
             )
         })?;
 
