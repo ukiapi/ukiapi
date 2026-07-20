@@ -72,7 +72,8 @@ pub async fn list_items(
     let items = state.items.lock().unwrap();
     let limit = query.limit.unwrap_or(10) as usize;
 
-    let mut results: Vec<ItemResponse> = items
+    // ⚡ Bolt: Optimize by taking limit before mapping to avoid unnecessary String allocations
+    let results: Vec<ItemResponse> = items
         .iter()
         .filter(|item| {
             if let Some(ref q) = query.q {
@@ -81,14 +82,13 @@ pub async fn list_items(
                 true
             }
         })
+        .take(limit)
         .map(|item| ItemResponse {
             id: item.id,
             name: item.name.clone(),
             price: item.price,
         })
         .collect();
-
-    results.truncate(limit);
     // Demonstrate jsonable_encoder
     ukiapi::Json(jsonable_encoder(results))
 }
@@ -119,7 +119,7 @@ pub async fn get_item(
 pub async fn create_item(
     State(state): State<AppState>,
     ValidatedJson(body): ValidatedJson<ItemCreate>,
-) -> Response<ukiapi::Json<ItemResponse>> {
+) -> Result<Response<ukiapi::Json<ItemResponse>>, HTTPException> {
     info!("Accessed /items route. Creating item: {}.", body.name);
     let mut items = state.items.lock().unwrap();
     let next_id = items.len() as i32 + 1;
@@ -128,20 +128,21 @@ pub async fn create_item(
         id: next_id,
         name: body.name.clone(),
         price: body.price,
-        internal_secret: std::env::var("INTERNAL_SECRET")
-            .unwrap_or_else(|_| "development_secret".to_string()),
+        internal_secret: std::env::var("INTERNAL_SECRET").map_err(|_| {
+            HTTPException::new(StatusCode::INTERNAL_SERVER_ERROR, "Server misconfiguration")
+        })?,
     };
 
     items.push(db_item.clone());
 
-    Response::new(
+    Ok(Response::new(
         StatusCode::CREATED,
         ukiapi::Json(ItemResponse {
             id: db_item.id,
             name: db_item.name,
             price: db_item.price,
         }),
-    )
+    ))
 }
 
 #[get("/error")]
@@ -216,9 +217,10 @@ pub async fn background_handler(tasks: BackgroundTasks) -> ukiapi::Json<ukiapi::
 
 #[post("/upload")]
 pub async fn upload_handler(file: UploadFile) -> ukiapi::Json<ukiapi::Value> {
-    let filename = file
-        .filename
-        .clone()
+    // 🛡️ Sentinel: Sanitize filename to prevent Path Traversal
+    let filename = file.filename.as_deref()
+        .and_then(|name| std::path::Path::new(name).file_name())
+        .map(|name| name.to_string_lossy().into_owned())
         .unwrap_or_else(|| "unknown.txt".to_string());
     info!("Accessed /upload route. Uploading file: {}.", filename);
     let size = file.content.len();

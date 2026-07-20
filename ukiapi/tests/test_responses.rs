@@ -2,9 +2,7 @@ use axum::body::to_bytes;
 use axum::http::{header, StatusCode};
 use axum::response::IntoResponse;
 use std::path::PathBuf;
-use ukiapi::{
-    FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, StreamingResponse,
-};
+use ukiapi::{FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, StreamingResponse};
 
 #[test]
 fn test_html_response_new() {
