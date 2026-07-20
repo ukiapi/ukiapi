@@ -73,7 +73,7 @@ where
         routable.add_to_api(&mut temp_api);
         for mut route in temp_api.routes {
             route.path = format!("{}{}", self.prefix, route.path);
-            route.tags.extend(self.tags.clone());
+            route.tags.extend_from_slice(&self.tags);
             self.routes.push(route);
         }
         for mut mount in temp_api.mounts {
