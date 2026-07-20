@@ -72,7 +72,8 @@ pub async fn list_items(
     let items = state.items.lock().unwrap();
     let limit = query.limit.unwrap_or(10) as usize;
 
-    let mut results: Vec<ItemResponse> = items
+    // ⚡ Bolt: Optimize by taking limit before mapping to avoid unnecessary String allocations
+    let results: Vec<ItemResponse> = items
         .iter()
         .filter(|item| {
             if let Some(ref q) = query.q {
@@ -81,14 +82,13 @@ pub async fn list_items(
                 true
             }
         })
+        .take(limit)
         .map(|item| ItemResponse {
             id: item.id,
             name: item.name.clone(),
             price: item.price,
         })
         .collect();
-
-    results.truncate(limit);
     // Demonstrate jsonable_encoder
     ukiapi::Json(jsonable_encoder(results))
 }
