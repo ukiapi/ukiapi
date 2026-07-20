@@ -1,3 +1,3 @@
-## 2024-05-24 - Avoid `.clone()` in high-traffic loops or large structures where slices can be used.
-**Learning:** `Vec::extend` coupled with `clone()` causes overhead where references/slices can be used instead to avoid allocations. E.g. `route.tags.extend_from_slice(&self.tags)` is more efficient than `route.tags.extend(self.tags.clone())`. Also when iterating over a Json `Value::Object` which is a Map, we can use `extend` on the `Map` directly instead of iterating and cloning `insert(k.clone(), v.clone())` if we're moving the object anyway like with `remove()`.
-**Action:** Look for `clone()` and `extend()` usage.
+## 2024-07-20 - Fast prefix checking in string processing
+**Learning:** In Rust, checking prefixes in a hot path (like HTTP headers or URLs) by converting the entire string using `.to_lowercase()` causes unnecessary heap allocations.
+**Action:** Use `.as_bytes()` combined with `.eq_ignore_ascii_case(b"...")` to avoid heap allocations and improve performance in text processing hot paths.

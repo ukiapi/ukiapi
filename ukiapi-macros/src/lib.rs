@@ -88,9 +88,7 @@ fn route_macro(args: TokenStream, input: TokenStream, method: &str) -> TokenStre
         if let syn::FnArg::Typed(pat_type) = input {
             if let Some((name, inner)) = extractor_inner_type(&pat_type.ty) {
                 if name == "Json" || name == "ValidatedJson" {
-                    return Some(
-                        quote! { .with_request_schema(::ukiapi::schema_for::<#inner>()) },
-                    );
+                    return Some(quote! { .with_request_schema(::ukiapi::schema_for::<#inner>()) });
                 }
             }
         }
