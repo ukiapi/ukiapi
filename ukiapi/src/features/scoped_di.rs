@@ -28,8 +28,8 @@ impl Display for ScopedDiError {
 impl From<ScopedDiError> for HTTPException {
     fn from(err: ScopedDiError) -> Self {
         match err {
-            ScopedDiError::Message(msg) => {
-                HTTPException::new(StatusCode::INTERNAL_SERVER_ERROR, msg)
+            ScopedDiError::Message(_msg) => {
+                HTTPException::new(StatusCode::INTERNAL_SERVER_ERROR, "Internal server error")
             }
             ScopedDiError::Http(http_err) => http_err,
         }
