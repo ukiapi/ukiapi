@@ -30,10 +30,11 @@ impl std::error::Error for HTTPException {}
 
 impl IntoResponse for HTTPException {
     fn into_response(self) -> AxumResponse {
+        // ⚡ Bolt: Move self.detail to avoid cloning the string allocation on every non-server-error response
         let safe_detail = if self.status_code.is_server_error() {
             "Internal Server Error".to_string()
         } else {
-            self.detail.clone()
+            self.detail
         };
 
         (
