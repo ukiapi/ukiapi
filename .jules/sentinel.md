@@ -22,3 +22,7 @@
 **Vulnerability:** Weak CORS configuration.
 **Learning:** Returning `CorsLayer::permissive()` allows cross-site origin access to all routes, making it vulnerable to CSRF and unauthenticated requests.
 **Prevention:** Avoid permissive layer, specify specific origins and methods instead.
+## 2025-02-23 - Prevent XSS and CSRF via permissive CORS
+**Vulnerability:** Found `CorsLayer::permissive()` used in `example/src/main.rs`.
+**Learning:** `CorsLayer::permissive()` allows cross-origin requests from any domain, making the application vulnerable to Cross-Site Scripting (XSS) and Cross-Site Request Forgery (CSRF).
+**Prevention:** Always define explicit `allow_origin`, `allow_methods`, and `allow_headers` in CORS configuration instead of using `permissive()`.

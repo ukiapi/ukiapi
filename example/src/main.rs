@@ -44,7 +44,15 @@ async fn main() {
         .compression()
         .timeout(Duration::from_secs(30))
         .body_limit(1024 * 1024) // 1MB
-        .cors(CorsLayer::permissive())
+        .cors(
+            CorsLayer::new()
+                .allow_origin(ukiapi::http::HeaderValue::from_static("http://localhost:3000"))
+                .allow_methods(vec![ukiapi::http::Method::GET, ukiapi::http::Method::POST])
+                .allow_headers(vec![
+                    ukiapi::http::header::CONTENT_TYPE,
+                    ukiapi::http::header::AUTHORIZATION,
+                ]),
+        )
         .serve(state)
         .await;
 }
