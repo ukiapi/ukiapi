@@ -83,11 +83,12 @@ where
                 filter_value(&mut val, &self.include, &self.exclude);
                 Json(val).into_response()
             }
-            Err(e) => {
+            Err(_) => {
                 use crate::http::StatusCode;
+                // 🛡️ Sentinel: Avoid leaking internal serialization errors in 500 response
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    format!("Serialization error: {}", e),
+                    "Internal Server Error",
                 )
                     .into_response()
             }
