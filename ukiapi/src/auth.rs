@@ -10,7 +10,7 @@ pub struct HTTPBearer;
 
 impl HTTPBearer {
     /// Extract the token from the request parts.
-    pub fn extract(parts: &Parts) -> Result<String, HTTPException> {
+    pub fn extract(parts: &Parts) -> Result<&str, HTTPException> {
         let auth_header = parts
             .headers
             .get(AUTHORIZATION)
@@ -27,7 +27,8 @@ impl HTTPBearer {
             ));
         }
 
-        Ok(auth_header[7..].trim().to_string())
+        // ⚡ Bolt: Return &str instead of String to avoid heap allocation
+        Ok(auth_header[7..].trim())
     }
 }
 
@@ -81,7 +82,7 @@ where
             )
         })?;
 
-        decode_jwt(&token, &secret).map_err(|e| {
+        decode_jwt(token, &secret).map_err(|e| {
             HTTPException::new(StatusCode::UNAUTHORIZED, format!("Invalid token: {}", e))
         })
     }
@@ -107,7 +108,7 @@ where
     type Output = String;
 
     async fn resolve(parts: &mut Parts, _state: &S) -> Result<Self::Output, HTTPException> {
-        HTTPBearer::extract(parts)
+        HTTPBearer::extract(parts).map(|s| s.to_string())
     }
 }
 
