@@ -124,4 +124,46 @@ mod tests {
         let pending_tasks = tasks.take_tasks();
         assert_eq!(pending_tasks.len(), 1);
     }
+
+    struct FailingScopedDependency;
+
+    impl ScopedDependency<()> for FailingScopedDependency {
+        type Output = String;
+
+        async fn resolve(
+            _parts: &mut Parts,
+            _state: &(),
+        ) -> Result<(Self::Output, BoxFuture<'static, ()>), ScopedDiError> {
+            Err(ScopedDiError::Message("resolution failed".to_string()))
+        }
+    }
+
+    #[tokio::test]
+    async fn test_scoped_depends_resolution_failure_message() {
+        let req = Request::builder().uri("/").body(()).unwrap();
+        let (mut parts, _) = req.into_parts();
+        let state = ();
+
+        let result =
+            ScopedDepends::<FailingScopedDependency, ()>::from_request_parts(&mut parts, &state)
+                .await;
+
+        assert!(result.is_err());
+        let err = match result { Err(e) => e, _ => unreachable!() };
+        assert_eq!(err.status_code, StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    #[test]
+    fn test_scoped_di_error_into_http_exception() {
+        let msg_err = ScopedDiError::Message("test msg".to_string());
+        let http_exc: HTTPException = msg_err.into();
+        assert_eq!(http_exc.status_code, StatusCode::INTERNAL_SERVER_ERROR);
+        assert_eq!(http_exc.detail, "Internal server error");
+
+        let orig_exc = HTTPException::new(StatusCode::BAD_REQUEST, "bad input");
+        let http_err = ScopedDiError::Http(orig_exc);
+        let http_exc2: HTTPException = http_err.into();
+        assert_eq!(http_exc2.status_code, StatusCode::BAD_REQUEST);
+        assert_eq!(http_exc2.detail, "bad input");
+    }
 }
