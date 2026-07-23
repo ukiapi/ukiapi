@@ -7,3 +7,7 @@
 ## 2026-03-02 - Avoiding Unnecessary Allocation in Error Responses
 **Learning:** Found a common anti-pattern where a Rust method taking ownership (`self`) was performing `.clone()` on one of its string fields when constructing an HTTP response, leading to redundant heap allocations. Furthermore, when using the `serde_json::json!` macro, passing a `&str` reference forces a `.to_owned()` allocation, while passing an owned `String` moves it into the `Value` without allocating.
 **Action:** Always verify if `.clone()` calls inside methods that take `self` by value can be replaced by moving the field (e.g., `self.detail`) to avoid unnecessary string allocation, especially in hot paths like error response handlers.
+
+## 2026-07-23 - Reuse String allocations using clear()
+**Learning:** When falling back to a static string while holding an owned `String` that is no longer needed, assigning a new `String` allocates memory.
+**Action:** Use `.clear()` and `.push_str()` on the existing `String` buffer to avoid allocation when the new content is smaller or similar in size.

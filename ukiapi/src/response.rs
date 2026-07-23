@@ -29,18 +29,17 @@ impl std::fmt::Display for HTTPException {
 impl std::error::Error for HTTPException {}
 
 impl IntoResponse for HTTPException {
-    fn into_response(self) -> AxumResponse {
-        // ⚡ Bolt: Move self.detail to avoid cloning the string allocation on every non-server-error response
-        let safe_detail = if self.status_code.is_server_error() {
-            "Internal Server Error".to_string()
-        } else {
-            self.detail
-        };
+    fn into_response(mut self) -> AxumResponse {
+        // ⚡ Bolt: Reuse the existing String buffer to avoid allocation on server errors
+        if self.status_code.is_server_error() {
+            self.detail.clear();
+            self.detail.push_str("Internal Server Error");
+        }
 
         (
             self.status_code,
             Json(json!({
-                "detail": safe_detail,
+                "detail": self.detail,
             })),
         )
             .into_response()
