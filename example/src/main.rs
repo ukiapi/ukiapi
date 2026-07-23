@@ -44,6 +44,7 @@ async fn main() {
         .compression()
         .timeout(Duration::from_secs(30))
         .body_limit(1024 * 1024) // 1MB
+        .secure_headers()
         .cors(
             CorsLayer::new()
                 .allow_origin(ukiapi::http::HeaderValue::from_static("http://localhost:3000"))
