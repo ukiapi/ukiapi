@@ -11,3 +11,6 @@
 ## 2026-07-23 - Reuse String allocations using clear()
 **Learning:** When falling back to a static string while holding an owned `String` that is no longer needed, assigning a new `String` allocates memory.
 **Action:** Use `.clear()` and `.push_str()` on the existing `String` buffer to avoid allocation when the new content is smaller or similar in size.
+## 2024-11-20 - Static Strings over Allocation
+**Learning:** In Rust, unconditionally calling `.to_lowercase()` on a string slice (like an HTTP method) when inserting into a `serde_json::Value` or Map forces an unnecessary heap allocation, especially problematic in initialization loops or hot paths when the vast majority of inputs belong to a small, known set (like standard HTTP verbs).
+**Action:** Use a `match` block mapped to `std::borrow::Cow::Borrowed` string literals for known values (and fallback to owned for unknown ones) to avoid the allocation overhead.
