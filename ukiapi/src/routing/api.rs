@@ -140,7 +140,16 @@ where
 
         for route in self.routes {
             let path_key = &route.path;
-            let method = route.method.to_lowercase();
+            // ⚡ Bolt: Avoid allocating a new String for standard HTTP methods
+            let method = match route.method {
+                "GET" => std::borrow::Cow::Borrowed("get"),
+                "POST" => std::borrow::Cow::Borrowed("post"),
+                "PUT" => std::borrow::Cow::Borrowed("put"),
+                "DELETE" => std::borrow::Cow::Borrowed("delete"),
+                "PATCH" => std::borrow::Cow::Borrowed("patch"),
+                "ANY" => std::borrow::Cow::Borrowed("x-any"),
+                other => std::borrow::Cow::Owned(other.to_lowercase()),
+            };
             let path_item = paths
                 .entry(path_key.to_string())
                 .or_insert_with(|| json!({}));
@@ -169,7 +178,7 @@ where
             if let Some(schema) = &route.request_schema {
                 operation["requestBody"] = json!({"required": true, "content": {"application/json": {"schema": process_openapi_schema(schema, &mut components_schemas)}}});
             }
-            path_item[&method] = operation;
+            path_item[method.as_ref()] = operation;
             router = (route.adder)(router, &route.path);
         }
 
