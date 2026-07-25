@@ -218,7 +218,9 @@ pub async fn background_handler(tasks: BackgroundTasks) -> ukiapi::Json<ukiapi::
 #[post("/upload")]
 pub async fn upload_handler(file: UploadFile) -> ukiapi::Json<ukiapi::Value> {
     // 🛡️ Sentinel: Sanitize filename to prevent Path Traversal
-    let filename = file.filename.as_deref()
+    let filename = file
+        .filename
+        .as_deref()
         .and_then(|name| std::path::Path::new(name).file_name())
         .map(|name| name.to_string_lossy().into_owned())
         .unwrap_or_else(|| "unknown.txt".to_string());
