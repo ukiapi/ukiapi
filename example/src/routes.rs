@@ -180,7 +180,7 @@ pub async fn redirect_example() -> RedirectResponse {
 
 #[get("/file", registry = ItemsRoute)]
 pub async fn file_example() -> FileResponse {
-    FileResponse::new("Cargo.toml")
+    FileResponse::new("static/index.html")
 }
 
 #[get("/background")]
