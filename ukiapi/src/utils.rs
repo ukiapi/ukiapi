@@ -83,4 +83,22 @@ mod tests {
         let result = jsonable_encoder(1.5);
         assert_eq!(result, json!(1.5));
     }
+
+    struct AlwaysFails;
+
+    impl Serialize for AlwaysFails {
+        fn serialize<S>(&self, _serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            use serde::ser::Error;
+            Err(S::Error::custom("Serialization always fails"))
+        }
+    }
+
+    #[test]
+    fn test_jsonable_encoder_serialization_error() {
+        let result = jsonable_encoder(AlwaysFails);
+        assert_eq!(result, Value::Null);
+    }
 }
