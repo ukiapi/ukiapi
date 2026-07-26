@@ -38,7 +38,8 @@ async fn main() {
         .on_shutdown(|_state| async {
             println!("🛑 Application shutting down...");
         })
-        .mount("/static", ".")
+        // 🛡️ Sentinel: Mount static files from a dedicated directory to prevent source code disclosure
+        .mount("/static", "static")
         .middleware(logging_middleware)
         .logger()
         .compression()
