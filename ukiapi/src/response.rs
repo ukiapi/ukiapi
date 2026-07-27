@@ -138,10 +138,16 @@ mod tests {
 
     #[tokio::test]
     async fn test_http_exception_internal_server_error_obscured() {
-        let exc = HTTPException::new(StatusCode::INTERNAL_SERVER_ERROR, "Super secret DB failure context");
+        let exc = HTTPException::new(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Super secret DB failure context",
+        );
         let response = exc.into_response();
         let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
         let json: serde_json::Value = serde_json::from_slice(&body).unwrap();
-        assert_eq!(json["detail"], "Internal Server Error", "Internal errors should be obscured in responses");
+        assert_eq!(
+            json["detail"], "Internal Server Error",
+            "Internal errors should be obscured in responses"
+        );
     }
 }

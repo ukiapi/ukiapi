@@ -86,11 +86,7 @@ where
             Err(_) => {
                 use crate::http::StatusCode;
                 // 🛡️ Sentinel: Avoid leaking internal serialization errors in 500 response
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "Internal Server Error",
-                )
-                    .into_response()
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
             }
         }
     }

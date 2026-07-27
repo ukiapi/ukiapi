@@ -33,33 +33,34 @@ where
             HTTPException::new(StatusCode::BAD_REQUEST, format!("Multipart error: {}", e))
         })?;
 
-        if let Some(field) = multipart.next_field().await.map_err(|e| {
+        while let Some(field) = multipart.next_field().await.map_err(|e| {
             HTTPException::new(
                 StatusCode::BAD_REQUEST,
                 format!("Multipart field error: {}", e),
             )
         })? {
-            let filename = field.file_name().map(|s| {
-                let s = s.replace('\\', "/");
-                std::path::Path::new(&s)
+            if let Some(name) = field.file_name() {
+                let name = name.replace('\\', "/");
+                let filename = std::path::Path::new(&name)
                     .file_name()
                     .and_then(|n| n.to_str())
                     .map(|s| s.to_string())
-                    .unwrap_or_else(|| "unknown.txt".to_string())
-            });
-            let content_type = field.content_type().map(|s| s.to_string());
-            let content = field.bytes().await.map_err(|e| {
-                HTTPException::new(
-                    StatusCode::BAD_REQUEST,
-                    format!("Failed to read multipart bytes: {}", e),
-                )
-            })?;
+                    .unwrap_or_else(|| "unknown.txt".to_string());
 
-            return Ok(UploadFile {
-                filename,
-                content_type,
-                content,
-            });
+                let content_type = field.content_type().map(|s| s.to_string());
+                let content = field.bytes().await.map_err(|e| {
+                    HTTPException::new(
+                        StatusCode::BAD_REQUEST,
+                        format!("Failed to read multipart bytes: {}", e),
+                    )
+                })?;
+
+                return Ok(UploadFile {
+                    filename: Some(filename),
+                    content_type,
+                    content,
+                });
+            }
         }
 
         Err(HTTPException::new(
