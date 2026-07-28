@@ -30,3 +30,7 @@
 **Vulnerability:** Found `CorsLayer::permissive()` used in `example/src/main.rs`.
 **Learning:** `CorsLayer::permissive()` allows cross-origin requests from any domain, making the application vulnerable to Cross-Site Scripting (XSS) and Cross-Site Request Forgery (CSRF).
 **Prevention:** Always define explicit `allow_origin`, `allow_methods`, and `allow_headers` in CORS configuration instead of using `permissive()`.
+## 2025-02-23 - Prevent Information Exposure in Static Mount
+**Vulnerability:** The application was mounting the entire project root `.` to `/static`, exposing source code, configuration files, and potential secrets.
+**Learning:** Using `.` as the directory for static file mounting is extremely dangerous. It exposes the entire working directory to external requests.
+**Prevention:** Always mount a dedicated, restricted directory (like `static` or `public`) for static files instead of the project root.
