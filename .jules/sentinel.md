@@ -34,3 +34,7 @@
 **Vulnerability:** The application was mounting the entire project root `.` to `/static`, exposing source code, configuration files, and potential secrets.
 **Learning:** Using `.` as the directory for static file mounting is extremely dangerous. It exposes the entire working directory to external requests.
 **Prevention:** Always mount a dedicated, restricted directory (like `static` or `public`) for static files instead of the project root.
+## 2025-02-23 - Prevent Info Leakage on Configuration Errors
+**Vulnerability:** Configuration errors, such as missing environment variables (`JWT_SECRET`, `INTERNAL_SECRET`) or token generation failures, were being passed as string details into `HTTPException` with a 500 status code.
+**Learning:** Although `HTTPException::into_response` obscures 500 errors by replacing the response body detail with "Internal Server Error", passing sensitive internal messages during the exception creation still poses an information exposure risk if the exception is logged, printed, or serialized through other means before hitting the final response handler.
+**Prevention:** Always use generic messages like "Internal Server Error" when constructing 500-level `HTTPException`s at the source of configuration or internal state failures. Do not pass raw underlying error strings into the exception payload.

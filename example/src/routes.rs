@@ -42,13 +42,13 @@ pub async fn login(
     let secret = std::env::var("JWT_SECRET").map_err(|_| {
         HTTPException::new(
             StatusCode::INTERNAL_SERVER_ERROR,
-            "JWT_SECRET environment variable is not set",
+            "Internal Server Error",
         )
     })?;
-    let token = encode_jwt(&claims, &secret).map_err(|e| {
+    let token = encode_jwt(&claims, &secret).map_err(|_| {
         HTTPException::new(
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Failed to generate token: {}", e),
+            "Internal Server Error",
         )
     })?;
 
@@ -129,7 +129,7 @@ pub async fn create_item(
         name: body.name.clone(),
         price: body.price,
         internal_secret: std::env::var("INTERNAL_SECRET").map_err(|_| {
-            HTTPException::new(StatusCode::INTERNAL_SERVER_ERROR, "Server misconfiguration")
+            HTTPException::new(StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error")
         })?,
     };
 
