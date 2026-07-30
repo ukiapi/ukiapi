@@ -53,6 +53,7 @@ pub trait ScopedDependency<S>: Send + Sync + 'static {
 
 /// An extractor that resolves a scoped dependency, registering its teardown
 /// logic into `BackgroundTasks` automatically.
+#[derive(Debug)]
 pub struct ScopedDepends<D: ScopedDependency<S>, S = ()>(pub D::Output, pub PhantomData<S>);
 
 impl<D, S> FromRequestParts<S> for ScopedDepends<D, S>
@@ -123,5 +124,63 @@ mod tests {
         let tasks = my_parts.extensions.get::<BackgroundTasks>().unwrap();
         let pending_tasks = tasks.take_tasks();
         assert_eq!(pending_tasks.len(), 1);
+    }
+
+    #[derive(Debug)]
+    struct FailingScopedDependencyMessage;
+
+    impl ScopedDependency<()> for FailingScopedDependencyMessage {
+        type Output = String;
+
+        async fn resolve(
+            _parts: &mut Parts,
+            _state: &(),
+        ) -> Result<(Self::Output, BoxFuture<'static, ()>), ScopedDiError> {
+            Err(ScopedDiError::Message("Internal failure".to_string()))
+        }
+    }
+
+    #[derive(Debug)]
+    struct FailingScopedDependencyHttp;
+
+    impl ScopedDependency<()> for FailingScopedDependencyHttp {
+        type Output = String;
+
+        async fn resolve(
+            _parts: &mut Parts,
+            _state: &(),
+        ) -> Result<(Self::Output, BoxFuture<'static, ()>), ScopedDiError> {
+            Err(ScopedDiError::Http(HTTPException::new(
+                StatusCode::UNAUTHORIZED,
+                "Unauthorized",
+            )))
+        }
+    }
+
+    #[tokio::test]
+    async fn test_scoped_depends_propagates_message_error() {
+        let req = Request::builder().uri("/").body(()).unwrap();
+        let (mut parts, _) = req.into_parts();
+        let result =
+            ScopedDepends::<FailingScopedDependencyMessage, ()>::from_request_parts(&mut parts, &())
+                .await;
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().status_code,
+            StatusCode::INTERNAL_SERVER_ERROR
+        );
+    }
+
+    #[tokio::test]
+    async fn test_scoped_depends_propagates_http_error() {
+        let req = Request::builder().uri("/").body(()).unwrap();
+        let (mut parts, _) = req.into_parts();
+        let result =
+            ScopedDepends::<FailingScopedDependencyHttp, ()>::from_request_parts(&mut parts, &())
+                .await;
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.status_code, StatusCode::UNAUTHORIZED);
+        assert_eq!(err.detail, "Unauthorized");
     }
 }
