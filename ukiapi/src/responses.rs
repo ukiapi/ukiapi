@@ -196,16 +196,15 @@ impl IntoResponse for FileResponse {
             }
         }
 
-        let mime = self.media_type.unwrap_or_else(|| {
+        let mime_str = self.media_type.as_deref().unwrap_or_else(|| {
             mime_guess::from_path(&self.path)
                 .first_raw()
                 .unwrap_or("application/octet-stream")
-                .to_string()
         });
 
         headers.insert(
             header::CONTENT_TYPE,
-            header::HeaderValue::from_str(&mime)
+            header::HeaderValue::from_str(mime_str)
                 .unwrap_or(header::HeaderValue::from_static("application/octet-stream")),
         );
 
