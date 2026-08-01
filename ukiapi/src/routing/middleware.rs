@@ -88,4 +88,31 @@ where
     fn body_limit(self, limit: usize) -> Self {
         self.use_layer(DefaultBodyLimit::max(limit))
     }
+
+    /// Add security headers (X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security).
+    fn secure_headers(self) -> Self {
+        self.middleware(|req: Request, next: Next| async move {
+            let mut res = next.run(req).await;
+            let headers = res.headers_mut();
+            if !headers.contains_key(axum::http::header::X_CONTENT_TYPE_OPTIONS) {
+                headers.insert(
+                    axum::http::header::X_CONTENT_TYPE_OPTIONS,
+                    axum::http::HeaderValue::from_static("nosniff"),
+                );
+            }
+            if !headers.contains_key(axum::http::header::X_FRAME_OPTIONS) {
+                headers.insert(
+                    axum::http::header::X_FRAME_OPTIONS,
+                    axum::http::HeaderValue::from_static("DENY"),
+                );
+            }
+            if !headers.contains_key(axum::http::header::STRICT_TRANSPORT_SECURITY) {
+                headers.insert(
+                    axum::http::header::STRICT_TRANSPORT_SECURITY,
+                    axum::http::HeaderValue::from_static("max-age=31536000; includeSubDomains"),
+                );
+            }
+            res
+        })
+    }
 }
