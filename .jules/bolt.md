@@ -11,3 +11,6 @@
 ## 2026-07-23 - Reuse String allocations using clear()
 **Learning:** When falling back to a static string while holding an owned `String` that is no longer needed, assigning a new `String` allocates memory.
 **Action:** Use `.clear()` and `.push_str()` on the existing `String` buffer to avoid allocation when the new content is smaller or similar in size.
+## 2026-11-20 - Avoid unnecessary String allocation for MIME types
+**Learning:** In hot paths like file serving (`FileResponse`), allocating an owned `String` via `.to_string()` as a fallback for missing MIME types causes unnecessary heap allocations per request. `axum::http::HeaderValue::from_str` accepts a `&str`, so the allocation is strictly redundant.
+**Action:** Use `.as_deref()` combined with a fallback returning a `&str` reference instead of forcing an allocation for static fallback strings.
