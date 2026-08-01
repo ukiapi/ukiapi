@@ -40,6 +40,7 @@ async fn main() {
         })
         .mount("/static", "static")
         .middleware(logging_middleware)
+        .secure_headers()
         .logger()
         .compression()
         .timeout(Duration::from_secs(30))
