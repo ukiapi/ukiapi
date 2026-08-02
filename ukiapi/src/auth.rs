@@ -114,6 +114,11 @@ mod tests {
     use super::*;
     use axum::http::header::{HeaderMap, HeaderValue};
     use axum::http::request::Parts;
+    use lazy_static::lazy_static;
+
+    lazy_static! {
+        static ref ENV_MUTEX: tokio::sync::Mutex<()> = tokio::sync::Mutex::new(());
+    }
 
     #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
     struct TestClaims {
@@ -230,5 +235,58 @@ mod tests {
         let parts = create_test_parts(headers);
         let token = HTTPBearer::extract(&parts).unwrap();
         assert_eq!(token, "my_token");
+    }
+
+    #[tokio::test]
+    async fn test_jwt_auth_resolve_missing_secret() {
+        let _guard = ENV_MUTEX.lock().await;
+
+        let old_secret = std::env::var("JWT_SECRET").ok();
+        std::env::remove_var("JWT_SECRET");
+
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            AUTHORIZATION,
+            HeaderValue::from_static("Bearer test_token"),
+        );
+        let mut parts = create_test_parts(headers);
+
+        let result = JWTAuth::<TestClaims>::resolve(&mut parts, &()).await;
+
+        if let Some(secret) = old_secret {
+            std::env::set_var("JWT_SECRET", secret);
+        }
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.status_code, StatusCode::INTERNAL_SERVER_ERROR);
+        assert_eq!(err.detail, "Server misconfiguration");
+    }
+
+    #[tokio::test]
+    async fn test_jwt_auth_resolve_invalid_token() {
+        let _guard = ENV_MUTEX.lock().await;
+
+        let old_secret = std::env::var("JWT_SECRET").ok();
+        std::env::set_var("JWT_SECRET", "test_secret");
+
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            AUTHORIZATION,
+            HeaderValue::from_static("Bearer invalid_token_format"),
+        );
+        let mut parts = create_test_parts(headers);
+
+        let result = JWTAuth::<TestClaims>::resolve(&mut parts, &()).await;
+
+        match old_secret {
+            Some(secret) => std::env::set_var("JWT_SECRET", secret),
+            None => std::env::remove_var("JWT_SECRET"),
+        }
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.status_code, StatusCode::UNAUTHORIZED);
+        assert!(err.detail.starts_with("Invalid token:"));
     }
 }
