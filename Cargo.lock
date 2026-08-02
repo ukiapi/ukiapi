@@ -2268,6 +2268,7 @@ dependencies = [
  "http-body-util",
  "inventory",
  "jsonwebtoken",
+ "lazy_static",
  "log",
  "mime_guess",
  "reqwest",
