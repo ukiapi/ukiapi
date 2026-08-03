@@ -42,6 +42,7 @@ async fn main() {
         .middleware(logging_middleware)
         .logger()
         .compression()
+        .security_headers()
         .timeout(Duration::from_secs(30))
         .body_limit(1024 * 1024) // 1MB
         .cors(
