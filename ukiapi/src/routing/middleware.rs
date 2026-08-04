@@ -14,7 +14,7 @@ use tower_http::{
 pub mod layers {
     pub use axum::extract::DefaultBodyLimit;
     pub use tower_http::{
-        compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer, trace::TraceLayer,
+        compression::CompressionLayer, cors::CorsLayer, set_header::SetResponseHeaderLayer, timeout::TimeoutLayer, trace::TraceLayer,
     };
 }
 
@@ -87,5 +87,21 @@ where
     /// Add request body size limit middleware.
     fn body_limit(self, limit: usize) -> Self {
         self.use_layer(DefaultBodyLimit::max(limit))
+    }
+
+    /// Add standard security headers middleware.
+    fn security_headers(self) -> Self {
+        self.use_layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+            axum::http::header::X_CONTENT_TYPE_OPTIONS,
+            axum::http::header::HeaderValue::from_static("nosniff"),
+        ))
+        .use_layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+            axum::http::header::X_FRAME_OPTIONS,
+            axum::http::header::HeaderValue::from_static("DENY"),
+        ))
+        .use_layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+            axum::http::header::X_XSS_PROTECTION,
+            axum::http::header::HeaderValue::from_static("1; mode=block"),
+        ))
     }
 }

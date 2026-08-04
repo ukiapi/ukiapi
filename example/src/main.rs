@@ -38,6 +38,7 @@ async fn main() {
         .on_shutdown(|_state| async {
             println!("🛑 Application shutting down...");
         })
+        .security_headers()
         .mount("/static", "static")
         .middleware(logging_middleware)
         .logger()
