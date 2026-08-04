@@ -35,6 +35,27 @@ impl TestClient {
             .header("Content-Type", "application/json")
             .body(Body::from(json))
     }
+
+    /// Perform a PUT request with a body.
+    pub fn put<T: Serialize>(&self, uri: &str, body: &T) -> RequestBuilder {
+        let json = serde_json::to_vec(body).unwrap();
+        RequestBuilder::new(self.router.clone(), "PUT", uri)
+            .header("Content-Type", "application/json")
+            .body(Body::from(json))
+    }
+
+    /// Perform a DELETE request.
+    pub fn delete(&self, uri: &str) -> RequestBuilder {
+        RequestBuilder::new(self.router.clone(), "DELETE", uri)
+    }
+
+    /// Perform a PATCH request with a body.
+    pub fn patch<T: Serialize>(&self, uri: &str, body: &T) -> RequestBuilder {
+        let json = serde_json::to_vec(body).unwrap();
+        RequestBuilder::new(self.router.clone(), "PATCH", uri)
+            .header("Content-Type", "application/json")
+            .body(Body::from(json))
+    }
 }
 
 pub struct RequestBuilder {
@@ -76,5 +97,36 @@ impl ResponseExt for AxumResponse {
     async fn json<T: serde::de::DeserializeOwned>(self) -> T {
         let body_bytes = self.into_body().collect().await.unwrap().to_bytes();
         serde_json::from_slice(&body_bytes).unwrap()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::UkiApi;
+    use serde::Deserialize;
+
+    #[derive(Serialize, Deserialize)]
+    struct DummyData {
+        foo: String,
+    }
+
+    #[tokio::test]
+    async fn test_client_methods() {
+        use crate::routing::route::Route;
+        let mut api = UkiApi::<()>::new();
+        api = api.route(Route::get("/test", || async { "get" }));
+        api = api.route(Route::post("/test", || async { "post" }));
+        api = api.route(Route::put("/test", || async { "put" }));
+        api = api.route(Route::delete("/test", || async { "delete" }));
+        api = api.route(Route::patch("/test", || async { "patch" }));
+        let client = TestClient::new(api, ());
+
+        let data = DummyData { foo: "bar".into() };
+        assert_eq!(client.get("/test").send().await.status(), 200);
+        assert_eq!(client.post("/test", &data).send().await.status(), 200);
+        assert_eq!(client.put("/test", &data).send().await.status(), 200);
+        assert_eq!(client.delete("/test").send().await.status(), 200);
+        assert_eq!(client.patch("/test", &data).send().await.status(), 200);
     }
 }
