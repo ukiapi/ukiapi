@@ -126,7 +126,8 @@ pub async fn create_item(
 
     let db_item = ItemDb {
         id: next_id,
-        name: body.name.clone(),
+        // ⚡ Bolt: Move `body.name` instead of cloning to avoid unnecessary allocation
+        name: body.name,
         price: body.price,
         internal_secret: std::env::var("INTERNAL_SECRET").map_err(|_| {
             HTTPException::new(StatusCode::INTERNAL_SERVER_ERROR, "Server misconfiguration")
