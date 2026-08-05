@@ -74,6 +74,20 @@ async fn test_query_extractor_missing_param() {
 }
 
 #[tokio::test]
+async fn test_validated_json_extractor_malformed_json() {
+    let api = routes![(), body_handler_route()];
+    let client = TestClient::new(api, ());
+
+    // Manually construct a malformed JSON payload by overriding the body
+    let response = client
+        .post("/body", &"")
+        .body(ukiapi::body::Body::from("{ malformed json }"))
+        .send()
+        .await;
+    assert_eq!(response.status(), 422);
+}
+
+#[tokio::test]
 async fn test_validated_json_extractor_valid() {
     let api = routes![(), body_handler_route()];
     let client = TestClient::new(api, ());
