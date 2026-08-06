@@ -11,7 +11,7 @@ env:
 
 jobs:
   test_example:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v4
@@ -23,3 +23,15 @@ jobs:
       run: |-
         cd example
         cargo test
+
+  test_workspace:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Test Workspace
+      run: cargo test --workspace --all-targets --all-features

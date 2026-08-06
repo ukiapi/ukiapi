@@ -124,4 +124,77 @@ mod tests {
         let pending_tasks = tasks.take_tasks();
         assert_eq!(pending_tasks.len(), 1);
     }
+    #[tokio::test]
+    async fn test_scoped_depends_teardown_failure() {
+        use axum::http::Request;
+
+        struct FailingScopedDependency;
+
+        impl ScopedDependency<()> for FailingScopedDependency {
+            type Output = String;
+
+            async fn resolve(
+                _parts: &mut Parts,
+                _state: &(),
+            ) -> Result<(Self::Output, BoxFuture<'static, ()>), ScopedDiError> {
+                Err(ScopedDiError::Message("Resolution failed".to_string()))
+            }
+        }
+
+        let req = Request::builder().uri("/").body(()).unwrap();
+        let (mut my_parts, _) = req.into_parts();
+        let state = ();
+
+        let result =
+            ScopedDepends::<FailingScopedDependency, ()>::from_request_parts(&mut my_parts, &state)
+                .await;
+
+        assert!(result.is_err());
+        let err = match result {
+            Err(e) => e,
+            Ok(_) => panic!("Expected error"),
+        };
+        assert_eq!(err.status_code, axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        assert_eq!(err.detail, "Internal server error");
+    }
+
+    #[tokio::test]
+    async fn test_scoped_depends_teardown_failure_http() {
+        use axum::http::Request;
+
+        struct FailingScopedDependencyHttp;
+
+        impl ScopedDependency<()> for FailingScopedDependencyHttp {
+            type Output = String;
+
+            async fn resolve(
+                _parts: &mut Parts,
+                _state: &(),
+            ) -> Result<(Self::Output, BoxFuture<'static, ()>), ScopedDiError> {
+                Err(ScopedDiError::Http(HTTPException::new(
+                    axum::http::StatusCode::BAD_REQUEST,
+                    "Bad Request".to_string(),
+                )))
+            }
+        }
+
+        let req = Request::builder().uri("/").body(()).unwrap();
+        let (mut my_parts, _) = req.into_parts();
+        let state = ();
+
+        let result =
+            ScopedDepends::<FailingScopedDependencyHttp, ()>::from_request_parts(
+                &mut my_parts,
+                &state,
+            )
+            .await;
+
+        assert!(result.is_err());
+        let err = match result {
+            Err(e) => e,
+            Ok(_) => panic!("Expected error"),
+        };
+        assert_eq!(err.status_code, axum::http::StatusCode::BAD_REQUEST);
+        assert_eq!(err.detail, "Bad Request");
+    }
 }
