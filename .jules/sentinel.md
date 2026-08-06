@@ -34,3 +34,8 @@
 **Vulnerability:** The application was mounting the entire project root `.` to `/static`, exposing source code, configuration files, and potential secrets.
 **Learning:** Using `.` as the directory for static file mounting is extremely dangerous. It exposes the entire working directory to external requests.
 **Prevention:** Always mount a dedicated, restricted directory (like `static` or `public`) for static files instead of the project root.
+
+## 2024-05-27 - Security Headers Enhancement
+**Vulnerability:** Missing default security headers (e.g., X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security).
+**Learning:** The UkiApi framework lacked built-in mechanisms to easily inject security headers globally, leading to apps being built without them.
+**Prevention:** I added a `security_headers()` method to the `MiddlewareExt` trait, utilizing `tower_http::set_header::SetResponseHeaderLayer::if_not_present`. This allows users to easily inject robust security headers across their applications.
