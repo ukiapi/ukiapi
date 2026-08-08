@@ -35,6 +35,27 @@ impl TestClient {
             .header("Content-Type", "application/json")
             .body(Body::from(json))
     }
+
+    /// Perform a PUT request with a body.
+    pub fn put<T: Serialize>(&self, uri: &str, body: &T) -> RequestBuilder {
+        let json = serde_json::to_vec(body).unwrap();
+        RequestBuilder::new(self.router.clone(), "PUT", uri)
+            .header("Content-Type", "application/json")
+            .body(Body::from(json))
+    }
+
+    /// Perform a PATCH request with a body.
+    pub fn patch<T: Serialize>(&self, uri: &str, body: &T) -> RequestBuilder {
+        let json = serde_json::to_vec(body).unwrap();
+        RequestBuilder::new(self.router.clone(), "PATCH", uri)
+            .header("Content-Type", "application/json")
+            .body(Body::from(json))
+    }
+
+    /// Perform a DELETE request.
+    pub fn delete(&self, uri: &str) -> RequestBuilder {
+        RequestBuilder::new(self.router.clone(), "DELETE", uri)
+    }
 }
 
 pub struct RequestBuilder {
