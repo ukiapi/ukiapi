@@ -111,3 +111,33 @@ async fn test_validated_json_extractor_validation_failure() {
     let response = client.post("/body", &body).send().await;
     assert_eq!(response.status(), 422);
 }
+
+#[tokio::test]
+async fn test_validated_json_extractor_malformed_json() {
+    let api = routes![(), body_handler_route()];
+    let client = TestClient::new(api, ());
+
+    // Pass an empty string slice which isn't valid JSON when parsing a TestBody struct
+    let response = client.post("/body", &"").send().await;
+    assert_eq!(response.status(), 422);
+
+    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
+    assert!(json["detail"].as_str().unwrap().starts_with("Invalid JSON:"),
+        "Expected 'Invalid JSON' error detail, got: {:?}", json["detail"]);
+}
+
+#[tokio::test]
+async fn test_query_extractor_malformed_query() {
+    let api = routes![(), query_handler_route()];
+    let client = TestClient::new(api, ());
+
+    // Pass non-integer to page
+    let response = client.get("/query?page=abc&name=test").send().await;
+    assert_eq!(response.status(), 422);
+
+    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
+    assert!(json["detail"].as_str().unwrap().starts_with("Invalid query parameters:"),
+        "Expected 'Invalid query parameters' error detail, got: {:?}", json["detail"]);
+}
