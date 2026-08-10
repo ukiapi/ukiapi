@@ -124,4 +124,17 @@ mod tests {
         let pending_tasks = tasks.take_tasks();
         assert_eq!(pending_tasks.len(), 1);
     }
+
+    #[test]
+    fn test_scoped_di_error_into_http_exception() {
+        let msg_err = ScopedDiError::Message("Something went wrong".to_string());
+        let http_exc: HTTPException = msg_err.into();
+        assert_eq!(http_exc.status_code, axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+
+        let inner_exc = HTTPException::new(axum::http::StatusCode::BAD_REQUEST, "Bad Request");
+        let http_err = ScopedDiError::Http(inner_exc);
+        let http_exc2: HTTPException = http_err.into();
+        assert_eq!(http_exc2.status_code, axum::http::StatusCode::BAD_REQUEST);
+        assert_eq!(http_exc2.detail, "Bad Request");
+    }
 }
