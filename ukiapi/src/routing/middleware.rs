@@ -7,14 +7,16 @@ use axum::{
 use std::convert::Infallible;
 use std::future::Future;
 use tower_http::{
-    compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer, trace::TraceLayer,
+    compression::CompressionLayer, cors::CorsLayer, set_header::SetResponseHeaderLayer,
+    timeout::TimeoutLayer, trace::TraceLayer,
 };
 
 /// Re-exports for common middleware layers.
 pub mod layers {
     pub use axum::extract::DefaultBodyLimit;
     pub use tower_http::{
-        compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer, trace::TraceLayer,
+        compression::CompressionLayer, cors::CorsLayer, set_header::SetResponseHeaderLayer,
+        timeout::TimeoutLayer, trace::TraceLayer,
     };
 }
 
@@ -87,5 +89,27 @@ where
     /// Add request body size limit middleware.
     fn body_limit(self, limit: usize) -> Self {
         self.use_layer(DefaultBodyLimit::max(limit))
+    }
+
+    /// Add secure headers middleware.
+    /// 🛡️ Sentinel: Adds default security headers (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Strict-Transport-Security)
+    fn secure_headers(self) -> Self {
+        use axum::http::header;
+        self.use_layer(SetResponseHeaderLayer::if_not_present(
+            header::X_CONTENT_TYPE_OPTIONS,
+            header::HeaderValue::from_static("nosniff"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            header::X_FRAME_OPTIONS,
+            header::HeaderValue::from_static("DENY"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            header::X_XSS_PROTECTION,
+            header::HeaderValue::from_static("1; mode=block"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            header::STRICT_TRANSPORT_SECURITY,
+            header::HeaderValue::from_static("max-age=31536000; includeSubDomains"),
+        ))
     }
 }
