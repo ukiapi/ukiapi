@@ -41,6 +41,7 @@ async fn main() {
         .mount("/static", "static")
         .middleware(logging_middleware)
         .logger()
+        .security_headers()
         .compression()
         .timeout(Duration::from_secs(30))
         .body_limit(1024 * 1024) // 1MB
