@@ -32,3 +32,15 @@ async fn test_client_methods() {
     let resp = client.delete("/test").send().await;
     assert_eq!(resp.status(), 405); // axum returns 405 Method Not Allowed
 }
+
+#[tokio::test]
+async fn test_client_empty_body_serialization() {
+    let api = ukiapi::routes![(), ukiapi::routing::Route::post("/test", |_: ukiapi::extract::Request| async { "OK" })];
+    let client = ukiapi::TestClient::new(api, ());
+
+    // Test that passing a reference to an empty string literal successfully builds a request
+    // and does not panic during JSON serialization in TestClient methods.
+    let req = client.post("/test", &"");
+    let res = req.send().await;
+    assert_eq!(res.status(), axum::http::StatusCode::OK);
+}
