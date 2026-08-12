@@ -231,23 +231,4 @@ mod tests {
         let token = HTTPBearer::extract(&parts).unwrap();
         assert_eq!(token, "my_token");
     }
-
-    #[tokio::test]
-    async fn test_jwt_auth_resolve_missing_secret() {
-        let old_secret = std::env::var("JWT_SECRET").ok();
-        std::env::remove_var("JWT_SECRET");
-
-        let mut headers = HeaderMap::new();
-        headers.insert(AUTHORIZATION, HeaderValue::from_static("Bearer token"));
-        let mut parts = create_test_parts(headers);
-
-        let result = JWTAuth::<TestClaims>::resolve(&mut parts, &()).await;
-
-        if let Some(val) = old_secret {
-            std::env::set_var("JWT_SECRET", val);
-        }
-
-        assert!(result.is_err());
-        assert_eq!(result.unwrap_err().status_code, StatusCode::INTERNAL_SERVER_ERROR);
-    }
 }

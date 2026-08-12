@@ -173,25 +173,4 @@ mod tests {
     fn test_security_helper() {
         let _security = security::<TestDependency, ()>();
     }
-
-    #[derive(Debug)]
-    struct StateDependency;
-
-    impl Dependency<String> for StateDependency {
-        type Output = String;
-
-        async fn resolve(_parts: &mut Parts, state: &String) -> Result<String, HTTPException> {
-            Ok(format!("state_val_{}", state))
-        }
-    }
-
-    #[tokio::test]
-    async fn test_depends_resolves_with_state() {
-        let mut parts = create_test_parts();
-        let state = "foo".to_string();
-        let result = Depends::<StateDependency, String>::from_request_parts(&mut parts, &state).await;
-        assert!(result.is_ok());
-        let Depends(value, _) = result.unwrap();
-        assert_eq!(value, "state_val_foo");
-    }
 }
