@@ -33,3 +33,4 @@ inventory = "0.3"
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.12", features = ["json"] }
+serial_test = "4.0.1"
