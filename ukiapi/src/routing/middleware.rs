@@ -6,7 +6,10 @@ use axum::{
 };
 use std::convert::Infallible;
 use std::future::Future;
+use axum::http::header;
 use tower_http::{
+    set_header::SetResponseHeaderLayer,
+
     compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer, trace::TraceLayer,
 };
 
@@ -14,6 +17,7 @@ use tower_http::{
 pub mod layers {
     pub use axum::extract::DefaultBodyLimit;
     pub use tower_http::{
+        set_header::SetResponseHeaderLayer,
         compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer, trace::TraceLayer,
     };
 }
@@ -87,5 +91,22 @@ where
     /// Add request body size limit middleware.
     fn body_limit(self, limit: usize) -> Self {
         self.use_layer(DefaultBodyLimit::max(limit))
+    }
+
+
+    /// Add default security headers to responses
+    fn default_security_headers(self) -> Self {
+        self.use_layer(SetResponseHeaderLayer::if_not_present(
+            header::X_CONTENT_TYPE_OPTIONS,
+            header::HeaderValue::from_static("nosniff"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            header::X_FRAME_OPTIONS,
+            header::HeaderValue::from_static("DENY"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            header::X_XSS_PROTECTION,
+            header::HeaderValue::from_static("1; mode=block"),
+        ))
     }
 }
