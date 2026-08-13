@@ -11,3 +11,6 @@
 ## 2026-07-23 - Reuse String allocations using clear()
 **Learning:** When falling back to a static string while holding an owned `String` that is no longer needed, assigning a new `String` allocates memory.
 **Action:** Use `.clear()` and `.push_str()` on the existing `String` buffer to avoid allocation when the new content is smaller or similar in size.
+## 2026-10-24 - Avoiding Unnecessary Cloning of Consumed Extractor Fields
+**Learning:** Found an anti-pattern where fields of a request extractor (like `ValidatedJson`) are unnecessarily cloned (`.clone()`) when constructing downstream models, even though the extractor struct itself is consumed by value.
+**Action:** Always verify if `.clone()` calls on fields of structs passed by value can be avoided by moving the fields directly to prevent unnecessary heap allocations and data copies.
