@@ -150,4 +150,14 @@ mod tests {
             "Internal errors should be obscured in responses"
         );
     }
+
+    #[test]
+    fn test_http_exception_implements_error() {
+        let exc = HTTPException::new(StatusCode::INTERNAL_SERVER_ERROR, "Server error");
+        let error: &dyn std::error::Error = &exc;
+        assert_eq!(
+            error.to_string(),
+            "HTTPException 500 Internal Server Error: Server error"
+        );
+    }
 }
