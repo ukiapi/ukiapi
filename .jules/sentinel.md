@@ -34,3 +34,7 @@
 **Vulnerability:** The application was mounting the entire project root `.` to `/static`, exposing source code, configuration files, and potential secrets.
 **Learning:** Using `.` as the directory for static file mounting is extremely dangerous. It exposes the entire working directory to external requests.
 **Prevention:** Always mount a dedicated, restricted directory (like `static` or `public`) for static files instead of the project root.
+## 2024-05-24 - Add Global Security Headers Middleware
+**Vulnerability:** Missing default security headers (e.g., X-Content-Type-Options, X-Frame-Options) across the API exposing the application to common attacks like MIME sniffing and Clickjacking.
+**Learning:** Ukiapi lacked a built-in mechanism to apply standard security headers globally on all routes. By adding it to the `MiddlewareExt` trait, we allow developers to easily enable these headers.
+**Prevention:** Always provide a default, opt-in mechanism to apply standard security headers in web frameworks. Use `if_not_present` to allow developers to override specific headers on individual routes.
