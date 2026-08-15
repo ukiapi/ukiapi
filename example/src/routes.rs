@@ -124,23 +124,27 @@ pub async fn create_item(
     let mut items = state.items.lock().unwrap();
     let next_id = items.len() as i32 + 1;
 
+    // ⚡ Bolt: Use direct move for `body.name` instead of cloning to avoid unnecessary string allocations.
     let db_item = ItemDb {
         id: next_id,
-        name: body.name.clone(),
+        name: body.name,
         price: body.price,
         internal_secret: std::env::var("INTERNAL_SECRET").map_err(|_| {
             HTTPException::new(StatusCode::INTERNAL_SERVER_ERROR, "Server misconfiguration")
         })?,
     };
 
-    items.push(db_item.clone());
+    // ⚡ Bolt: Extract fields explicitly so we can move `db_item` into `items` without cloning the entire struct
+    let res_name = db_item.name.clone();
+    let res_price = db_item.price;
+    items.push(db_item);
 
     Ok(Response::new(
         StatusCode::CREATED,
         ukiapi::Json(ItemResponse {
-            id: db_item.id,
-            name: db_item.name,
-            price: db_item.price,
+            id: next_id,
+            name: res_name,
+            price: res_price,
         }),
     ))
 }
