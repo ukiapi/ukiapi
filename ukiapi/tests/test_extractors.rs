@@ -111,3 +111,13 @@ async fn test_validated_json_extractor_validation_failure() {
     let response = client.post("/body", &body).send().await;
     assert_eq!(response.status(), 422);
 }
+
+#[tokio::test]
+async fn test_validated_json_extractor_invalid_body_format() {
+    let api = routes![(), body_handler_route()];
+    let client = TestClient::new(api, ());
+
+    // passing an invalid literal here instead of valid JSON object struct
+    let response = client.post("/body", &"invalid_not_an_object").send().await;
+    assert_eq!(response.status(), 422);
+}
