@@ -34,3 +34,7 @@
 **Vulnerability:** The application was mounting the entire project root `.` to `/static`, exposing source code, configuration files, and potential secrets.
 **Learning:** Using `.` as the directory for static file mounting is extremely dangerous. It exposes the entire working directory to external requests.
 **Prevention:** Always mount a dedicated, restricted directory (like `static` or `public`) for static files instead of the project root.
+## 2024-08-15 - Add secure headers middleware
+**Vulnerability:** Missing security headers (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Strict-Transport-Security).
+**Learning:** It is crucial to have global middleware to ensure these headers are sent with every response to prevent various attacks like MIME sniffing and Clickjacking.
+**Prevention:** Use `tower_http::set_header::SetResponseHeaderLayer` to add default security headers globally without overwriting existing route-specific headers.
