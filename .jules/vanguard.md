@@ -6,3 +6,7 @@
 **Issue:** `UploadFile` extractor only parsed the very first multipart field and failed if metadata or non-file fields were positioned earlier in the HTTP request payload, which was untested.
 **Learning:** `axum::extract::Multipart` iterates over fields sequentially. Extractors wrapping `Multipart` must iterate through all fields (e.g., using `while let Some(field)`) rather than assuming the file is always the first part.
 **Prevention:** Always write unit tests for multipart body extraction that simulate varied field ordering (e.g., text fields before file fields) by explicitly constructing realistic boundary-delimited payloads.
+## 2024-07-22 - Missing Test for Structural Deserialization in ValidatedJson
+**Issue:** Missing test for serde deserialization structural mismatch in ValidatedJson.
+**Learning:** Passing a string literal (e.g. `&"invalid"`) to `TestClient::post()` simulates a client sending valid JSON string content that fails to deserialize into the expected struct, covering the JSON format failure branch of the extractor.
+**Prevention:** Explicitly test both constraint validation failures and structural deserialization failures for request extractors.
