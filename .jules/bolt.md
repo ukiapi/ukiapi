@@ -11,3 +11,6 @@
 ## 2026-07-23 - Reuse String allocations using clear()
 **Learning:** When falling back to a static string while holding an owned `String` that is no longer needed, assigning a new `String` allocates memory.
 **Action:** Use `.clear()` and `.push_str()` on the existing `String` buffer to avoid allocation when the new content is smaller or similar in size.
+## 2026-08-16 - Avoid Clone on Value Extractors
+**Learning:** In Rust, when a struct is consumed by value (e.g., from a request extractor like `ValidatedJson`), calling `.clone()` on its fields when constructing downstream models causes unnecessary heap allocations and data copies.
+**Action:** Move the `String` fields directly when the parent struct is consumed by value to prevent unnecessary heap allocations and data copies.
