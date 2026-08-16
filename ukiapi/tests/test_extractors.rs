@@ -111,3 +111,22 @@ async fn test_validated_json_extractor_validation_failure() {
     let response = client.post("/body", &body).send().await;
     assert_eq!(response.status(), 422);
 }
+
+#[tokio::test]
+async fn test_validated_json_extractor_deserialization_failure() {
+    let api = routes![(), body_handler_route()];
+    let client = TestClient::new(api, ());
+
+    let response = client.post("/body", &"invalid_structure").send().await;
+    assert_eq!(response.status(), 422);
+}
+
+#[tokio::test]
+async fn test_query_extractor_deserialization_failure() {
+    let api = routes![(), query_handler_route()];
+    let client = TestClient::new(api, ());
+
+    // page is expected to be u32, but we pass a string that cannot be parsed as u32
+    let response = client.get("/query?page=invalid&name=test").send().await;
+    assert_eq!(response.status(), 422);
+}
