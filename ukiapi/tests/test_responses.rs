@@ -138,3 +138,23 @@ fn test_streaming_response_with_status() {
     let response = StreamingResponse::new(stream).with_status(StatusCode::PARTIAL_CONTENT);
     assert_eq!(response.status_code, StatusCode::PARTIAL_CONTENT);
 }
+
+#[tokio::test]
+#[allow(clippy::io_other_error)]
+async fn test_streaming_response_error_variant() {
+    use futures::stream;
+    use ukiapi::StreamingResponse;
+    use axum::response::IntoResponse;
+    use axum::body::to_bytes;
+    use std::io::{Error, ErrorKind};
+
+    let err_stream = stream::iter(vec![
+        Err::<String, _>(Error::new(ErrorKind::Other, "Stream error")),
+    ]);
+
+    let resp = StreamingResponse::new(err_stream);
+    let axum_resp = resp.into_response();
+
+    let body = to_bytes(axum_resp.into_body(), usize::MAX).await;
+    assert!(body.is_err(), "Expected an error when collecting the stream");
+}
