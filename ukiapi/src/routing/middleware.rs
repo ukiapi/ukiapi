@@ -88,4 +88,28 @@ where
     fn body_limit(self, limit: usize) -> Self {
         self.use_layer(DefaultBodyLimit::max(limit))
     }
+
+    /// Add security headers middleware (e.g. Content-Security-Policy, X-Content-Type-Options)
+    fn secure_headers(self) -> Self {
+        use axum::http::header;
+        use axum::http::HeaderValue;
+        use tower_http::set_header::SetResponseHeaderLayer;
+
+        self.use_layer(SetResponseHeaderLayer::if_not_present(
+            header::X_CONTENT_TYPE_OPTIONS,
+            HeaderValue::from_static("nosniff"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            header::X_FRAME_OPTIONS,
+            HeaderValue::from_static("DENY"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            header::X_XSS_PROTECTION,
+            HeaderValue::from_static("1; mode=block"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            header::CONTENT_SECURITY_POLICY,
+            HeaderValue::from_static("default-src 'self'; frame-ancestors 'none'; object-src 'none'"),
+        ))
+    }
 }
