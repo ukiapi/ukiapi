@@ -126,7 +126,6 @@ pub async fn create_item(
 
     let db_item = ItemDb {
         id: next_id,
-        // ⚡ Bolt: Optimize by taking ownership instead of cloning the request body string
         name: std::mem::take(&mut body.name),
         price: body.price,
         internal_secret: std::env::var("INTERNAL_SECRET").map_err(|_| {
@@ -134,15 +133,14 @@ pub async fn create_item(
         })?,
     };
 
-    items.push(db_item);
-    let saved_item = items.last().unwrap();
+    items.push(db_item.clone());
 
     Ok(Response::new(
         StatusCode::CREATED,
         ukiapi::Json(ItemResponse {
-            id: saved_item.id,
-            name: saved_item.name.clone(),
-            price: saved_item.price,
+            id: db_item.id,
+            name: db_item.name.clone(),
+            price: db_item.price,
         }),
     ))
 }
