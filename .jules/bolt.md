@@ -11,3 +11,6 @@
 ## 2026-07-23 - Reuse String allocations using clear()
 **Learning:** When falling back to a static string while holding an owned `String` that is no longer needed, assigning a new `String` allocates memory.
 **Action:** Use `.clear()` and `.push_str()` on the existing `String` buffer to avoid allocation when the new content is smaller or similar in size.
+## 2024-11-20 - Avoiding clone() by moving from extractors
+**Learning:** When dealing with structs extracted from request bodies (like `ValidatedJson`), you can often avoid string clone allocations by taking ownership of the inner struct fields via destructuring (`ValidatedJson(mut body)`) and moving or `std::mem::take`-ing the fields.
+**Action:** Avoid `.clone()` on request model fields when mapping to database or downstream models by moving fields directly out of destructured extractors.
