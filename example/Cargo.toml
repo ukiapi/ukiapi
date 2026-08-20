@@ -13,5 +13,8 @@ validator = "0.20"
 schemars = "0.8"
 env_logger = "0.11"
 
+[dev-dependencies]
+serial_test = "4.0.1"
+
 [package.metadata.cargo-machete]
 ignored = ["schemars", "serde", "serde_json", "validator"]
