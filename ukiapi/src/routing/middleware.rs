@@ -88,4 +88,26 @@ where
     fn body_limit(self, limit: usize) -> Self {
         self.use_layer(DefaultBodyLimit::max(limit))
     }
+
+    /// Add common security headers middleware.
+    fn secure_headers(self) -> Self {
+        use axum::http::header;
+        self
+            .use_layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+                header::X_CONTENT_TYPE_OPTIONS,
+                axum::http::HeaderValue::from_static("nosniff"),
+            ))
+            .use_layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+                header::X_FRAME_OPTIONS,
+                axum::http::HeaderValue::from_static("DENY"),
+            ))
+            .use_layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+                header::X_XSS_PROTECTION,
+                axum::http::HeaderValue::from_static("1; mode=block"),
+            ))
+            .use_layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+                header::STRICT_TRANSPORT_SECURITY,
+                axum::http::HeaderValue::from_static("max-age=31536000; includeSubDomains"),
+            ))
+    }
 }
