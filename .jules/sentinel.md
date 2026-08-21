@@ -34,3 +34,7 @@
 **Vulnerability:** The application was mounting the entire project root `.` to `/static`, exposing source code, configuration files, and potential secrets.
 **Learning:** Using `.` as the directory for static file mounting is extremely dangerous. It exposes the entire working directory to external requests.
 **Prevention:** Always mount a dedicated, restricted directory (like `static` or `public`) for static files instead of the project root.
+## 2025-02-23 - Prevent Header Vulnerabilities
+**Vulnerability:** The application was missing basic security headers globally, potentially exposing users to clickjacking, MIME-sniffing, and MITM attacks via missing HSTS.
+**Learning:** `axum` and `tower_http` do not apply security headers by default. Standard headers like `X-Content-Type-Options`, `X-Frame-Options`, and `Strict-Transport-Security` must be explicitly added via middleware layers.
+**Prevention:** Always add a global security headers middleware (e.g., via `tower_http::set_header::SetResponseHeaderLayer::if_not_present`) during router initialization to ensure all responses get basic secure defaults.

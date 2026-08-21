@@ -8,7 +8,9 @@ use std::convert::Infallible;
 use std::future::Future;
 use tower_http::{
     compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer, trace::TraceLayer,
+    set_header::SetResponseHeaderLayer,
 };
+use axum::http::header::{HeaderValue, STRICT_TRANSPORT_SECURITY, X_CONTENT_TYPE_OPTIONS, X_FRAME_OPTIONS};
 
 /// Re-exports for common middleware layers.
 pub mod layers {
@@ -87,5 +89,21 @@ where
     /// Add request body size limit middleware.
     fn body_limit(self, limit: usize) -> Self {
         self.use_layer(DefaultBodyLimit::max(limit))
+    }
+
+    /// Add security headers middleware.
+    fn security_headers(self) -> Self {
+        self.use_layer(SetResponseHeaderLayer::if_not_present(
+            X_CONTENT_TYPE_OPTIONS,
+            HeaderValue::from_static("nosniff"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            X_FRAME_OPTIONS,
+            HeaderValue::from_static("DENY"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            STRICT_TRANSPORT_SECURITY,
+            HeaderValue::from_static("max-age=31536000; includeSubDomains"),
+        ))
     }
 }
