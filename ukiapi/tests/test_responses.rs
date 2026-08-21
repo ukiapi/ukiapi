@@ -138,3 +138,17 @@ fn test_streaming_response_with_status() {
     let response = StreamingResponse::new(stream).with_status(StatusCode::PARTIAL_CONTENT);
     assert_eq!(response.status_code, StatusCode::PARTIAL_CONTENT);
 }
+
+#[tokio::test]
+async fn test_streaming_response_error() {
+    let stream = futures::stream::iter(vec![
+        Ok::<_, std::io::Error>(vec![1, 2, 3]),
+        Err::<Vec<u8>, _>(std::io::Error::other("Stream error")),
+    ]);
+
+    let response = StreamingResponse::new(stream);
+    let res = response.into_response();
+
+    let body = to_bytes(res.into_body(), usize::MAX).await;
+    assert!(body.is_err());
+}
