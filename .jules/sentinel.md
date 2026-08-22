@@ -34,3 +34,7 @@
 **Vulnerability:** The application was mounting the entire project root `.` to `/static`, exposing source code, configuration files, and potential secrets.
 **Learning:** Using `.` as the directory for static file mounting is extremely dangerous. It exposes the entire working directory to external requests.
 **Prevention:** Always mount a dedicated, restricted directory (like `static` or `public`) for static files instead of the project root.
+## 2024-05-20 - Global Security Headers Framework Middleware
+**Vulnerability:** Missing default security headers (e.g. X-Frame-Options, X-Content-Type-Options, HSTS) in the Ukiapi framework responses.
+**Learning:** In axum applications using tower_http, use SetResponseHeaderLayer::if_not_present to apply default security headers globally on the router builder without overwriting existing route-specific headers.
+**Prevention:** Standardize a `.secure_headers()` extension in Ukiapi's `MiddlewareExt` trait and call it on the router builder in main.rs to ensure baseline protection against clickjacking, MIME-sniffing, and insecure transport.
