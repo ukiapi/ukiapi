@@ -7,14 +7,14 @@ use axum::{
 use std::convert::Infallible;
 use std::future::Future;
 use tower_http::{
-    compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer, trace::TraceLayer,
+    compression::CompressionLayer, cors::CorsLayer, set_header::SetResponseHeaderLayer, timeout::TimeoutLayer, trace::TraceLayer,
 };
 
 /// Re-exports for common middleware layers.
 pub mod layers {
     pub use axum::extract::DefaultBodyLimit;
     pub use tower_http::{
-        compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer, trace::TraceLayer,
+        compression::CompressionLayer, cors::CorsLayer, set_header::SetResponseHeaderLayer, timeout::TimeoutLayer, trace::TraceLayer,
     };
 }
 
@@ -87,5 +87,25 @@ where
     /// Add request body size limit middleware.
     fn body_limit(self, limit: usize) -> Self {
         self.use_layer(DefaultBodyLimit::max(limit))
+    }
+
+    /// Add default security headers middleware.
+    fn security_headers(self) -> Self {
+        self.use_layer(SetResponseHeaderLayer::if_not_present(
+            axum::http::header::X_CONTENT_TYPE_OPTIONS,
+            axum::http::HeaderValue::from_static("nosniff"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            axum::http::header::X_FRAME_OPTIONS,
+            axum::http::HeaderValue::from_static("DENY"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            axum::http::header::X_XSS_PROTECTION,
+            axum::http::HeaderValue::from_static("1; mode=block"),
+        ))
+        .use_layer(SetResponseHeaderLayer::if_not_present(
+            axum::http::header::STRICT_TRANSPORT_SECURITY,
+            axum::http::HeaderValue::from_static("max-age=31536000; includeSubDomains"),
+        ))
     }
 }
