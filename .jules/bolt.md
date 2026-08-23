@@ -11,3 +11,6 @@
 ## 2026-07-23 - Reuse String allocations using clear()
 **Learning:** When falling back to a static string while holding an owned `String` that is no longer needed, assigning a new `String` allocates memory.
 **Action:** Use `.clear()` and `.push_str()` on the existing `String` buffer to avoid allocation when the new content is smaller or similar in size.
+## 2026-07-25 - Avoid unnecessary allocations by cloning only what's needed
+**Learning:** Found a common anti-pattern where a whole database struct containing large/sensitive strings (like `internal_secret`) was being cloned just to satisfy the borrow checker for insertion into a collection, while constructing the response could have used a clone of only the required field.
+**Action:** Always construct response structs using specific `.clone()` calls on the necessary fields before moving the larger, un-cloned database entity into persistent storage (e.g., a `Vec` or a cache).
