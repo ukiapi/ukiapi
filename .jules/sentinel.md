@@ -34,3 +34,7 @@
 **Vulnerability:** The application was mounting the entire project root `.` to `/static`, exposing source code, configuration files, and potential secrets.
 **Learning:** Using `.` as the directory for static file mounting is extremely dangerous. It exposes the entire working directory to external requests.
 **Prevention:** Always mount a dedicated, restricted directory (like `static` or `public`) for static files instead of the project root.
+## 2025-02-23 - Missing Default Security Headers
+**Vulnerability:** The application framework did not include default security headers (e.g., X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security, X-XSS-Protection) in its responses, leaving it vulnerable to MIME-sniffing, clickjacking, and other cross-site attacks.
+**Learning:** Security headers are a fundamental layer of defense. A framework should provide a simple mechanism to apply these globally across all routes.
+**Prevention:** Implement a global middleware using `SetResponseHeaderLayer::if_not_present` to ensure essential security headers are always set on responses unless explicitly overridden.
