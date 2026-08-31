@@ -6,6 +6,7 @@ use ukiapi::test_client::ResponseExt;
 use ukiapi::TestClient;
 
 #[tokio::test]
+#[serial_test::serial]
 async fn test_auth_flow() {
     std::env::set_var("JWT_SECRET", "test_secret");
     let state = AppState {
@@ -45,6 +46,7 @@ async fn test_auth_flow() {
 }
 
 #[tokio::test]
+#[serial_test::serial]
 async fn test_auth_invalid_token() {
     std::env::set_var("JWT_SECRET", "test_secret");
     let state = AppState {
