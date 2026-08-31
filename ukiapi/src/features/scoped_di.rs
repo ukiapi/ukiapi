@@ -9,6 +9,7 @@ use std::future::Future;
 use std::marker::PhantomData;
 
 /// An error that might occur when resolving a scoped dependency.
+#[derive(Debug)]
 pub enum ScopedDiError {
     /// A generic message error.
     Message(String),
@@ -24,6 +25,8 @@ impl Display for ScopedDiError {
         }
     }
 }
+
+impl std::error::Error for ScopedDiError {}
 
 impl From<ScopedDiError> for HTTPException {
     fn from(err: ScopedDiError) -> Self {
@@ -123,5 +126,23 @@ mod tests {
         let tasks = my_parts.extensions.get::<BackgroundTasks>().unwrap();
         let pending_tasks = tasks.take_tasks();
         assert_eq!(pending_tasks.len(), 1);
+    }
+
+    #[test]
+    fn test_scoped_di_error_is_error() {
+        let err = ScopedDiError::Message("test error".to_string());
+        let _error_trait: &dyn std::error::Error = &err;
+    }
+
+    #[test]
+    fn test_scoped_di_error_display() {
+        let msg_err = ScopedDiError::Message("custom error".to_string());
+        assert_eq!(format!("{}", msg_err), "custom error");
+
+        let http_err = ScopedDiError::Http(HTTPException::new(axum::http::StatusCode::BAD_REQUEST, "bad input"));
+        let display = format!("{}", http_err);
+        assert!(display.contains("HTTPException"));
+        assert!(display.contains("400"));
+        assert!(display.contains("bad input"));
     }
 }
