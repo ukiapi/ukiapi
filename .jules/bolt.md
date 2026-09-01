@@ -11,3 +11,6 @@
 ## 2026-07-23 - Reuse String allocations using clear()
 **Learning:** When falling back to a static string while holding an owned `String` that is no longer needed, assigning a new `String` allocates memory.
 **Action:** Use `.clear()` and `.push_str()` on the existing `String` buffer to avoid allocation when the new content is smaller or similar in size.
+## 2026-10-27 - Preventing Unnecessary Struct Cloning in Collections
+**Learning:** Found an anti-pattern where a Rust struct (e.g., `ItemDb`) was fully cloned just to satisfy the borrow checker when inserting it into a collection (`items.push(db_item.clone())`), and then constructing a response struct from the original fields. This caused unnecessary memory allocation, especially for hidden or large fields (like `internal_secret`).
+**Action:** When both creating a response and inserting a struct into a collection, only clone the specific fields needed for the response (like strings) and move the un-cloned struct into the collection to eliminate unnecessary memory allocations for the entire struct and its unneeded fields.
