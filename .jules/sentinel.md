@@ -38,3 +38,8 @@
 **Vulnerability:** The application was missing critical HTTP security headers globally.
 **Learning:** Security headers like `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and `Strict-Transport-Security: max-age=31536000; includeSubDomains` are fundamental defense-in-depth mechanisms that should be applied by default.
 **Prevention:** Implement a `secure_headers` middleware using `tower_http::set_header::SetResponseHeaderLayer::if_not_present` and apply it globally to the router builder.
+
+## 2024-09-02 - Add missing security headers
+**Vulnerability:** Missing Content-Security-Policy (CSP) and X-XSS-Protection security headers.
+**Learning:** The `secure_headers` middleware provided by Ukiapi only included a subset of standard security headers.
+**Prevention:** Ensure new framework projects initialize full defense-in-depth headers out of the box.
