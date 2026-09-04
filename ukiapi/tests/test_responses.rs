@@ -138,3 +138,20 @@ fn test_streaming_response_with_status() {
     let response = StreamingResponse::new(stream).with_status(StatusCode::PARTIAL_CONTENT);
     assert_eq!(response.status_code, StatusCode::PARTIAL_CONTENT);
 }
+
+#[tokio::test]
+async fn test_streaming_response_error_propagation() {
+    let stream = futures::stream::iter(vec![
+        Ok::<_, std::io::Error>(vec![1, 2, 3]),
+        Err(std::io::Error::other("stream error")),
+    ]);
+    let response = StreamingResponse::new(stream);
+    let axum_res = response.into_response();
+
+    // In axum, the stream is not eagerly polled when converting to a response,
+    // so the status will be 200 OK. We must read the body to encounter the error.
+    assert_eq!(axum_res.status(), StatusCode::OK);
+
+    let result = to_bytes(axum_res.into_body(), usize::MAX).await;
+    assert!(result.is_err(), "Expected an error while streaming the body");
+}
