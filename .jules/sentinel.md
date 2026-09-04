@@ -38,3 +38,7 @@
 **Vulnerability:** The application was missing critical HTTP security headers globally.
 **Learning:** Security headers like `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and `Strict-Transport-Security: max-age=31536000; includeSubDomains` are fundamental defense-in-depth mechanisms that should be applied by default.
 **Prevention:** Implement a `secure_headers` middleware using `tower_http::set_header::SetResponseHeaderLayer::if_not_present` and apply it globally to the router builder.
+## 2025-02-23 - Add CSP and X-XSS-Protection Headers
+**Vulnerability:** The application was missing `Content-Security-Policy` and `X-XSS-Protection` headers in the default security middleware.
+**Learning:** Even with basic security headers, missing CSP and XSS protection leaves the application vulnerable to injection attacks.
+**Prevention:** Ensure the `secure_headers` middleware comprehensively covers all standard security headers using `axum::http::header` constants.
