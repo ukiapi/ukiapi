@@ -104,5 +104,17 @@ where
                 axum::http::header::STRICT_TRANSPORT_SECURITY,
                 axum::http::HeaderValue::from_static("max-age=31536000; includeSubDomains"),
             ))
+            .use_layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+                axum::http::header::CONTENT_SECURITY_POLICY,
+                axum::http::HeaderValue::from_static("default-src 'self'"),
+            ))
+            .use_layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+                axum::http::header::X_XSS_PROTECTION,
+                axum::http::HeaderValue::from_static("1; mode=block"),
+            ))
+            .use_layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+                axum::http::header::REFERRER_POLICY,
+                axum::http::HeaderValue::from_static("strict-origin-when-cross-origin"),
+            ))
     }
 }

@@ -38,3 +38,7 @@
 **Vulnerability:** The application was missing critical HTTP security headers globally.
 **Learning:** Security headers like `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and `Strict-Transport-Security: max-age=31536000; includeSubDomains` are fundamental defense-in-depth mechanisms that should be applied by default.
 **Prevention:** Implement a `secure_headers` middleware using `tower_http::set_header::SetResponseHeaderLayer::if_not_present` and apply it globally to the router builder.
+## 2025-02-23 - Add defense in depth headers
+**Vulnerability:** The application missed further defense-in-depth security headers like `Content-Security-Policy`, `X-XSS-Protection`, and `Referrer-Policy`
+**Learning:** These headers complement standard ones like `X-Frame-Options` and `X-Content-Type-Options` for improved security. The `axum::http::header` module defines all required headers natively.
+**Prevention:** Extend existing header middlewares to always set `Content-Security-Policy`, `X-XSS-Protection` and `Referrer-Policy`.
