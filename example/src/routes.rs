@@ -133,15 +133,18 @@ pub async fn create_item(
         })?,
     };
 
-    items.push(db_item.clone());
+    let response_item = ItemResponse {
+        id: db_item.id,
+        name: body.name,
+        price: db_item.price,
+    };
+
+    // ⚡ Bolt: Move the un-cloned db_item into the collection to eliminate unnecessary memory allocation
+    items.push(db_item);
 
     Ok(Response::new(
         StatusCode::CREATED,
-        ukiapi::Json(ItemResponse {
-            id: db_item.id,
-            name: db_item.name,
-            price: db_item.price,
-        }),
+        ukiapi::Json(response_item),
     ))
 }
 
