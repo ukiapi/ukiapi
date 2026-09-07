@@ -38,3 +38,7 @@
 **Vulnerability:** The application was missing critical HTTP security headers globally.
 **Learning:** Security headers like `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and `Strict-Transport-Security: max-age=31536000; includeSubDomains` are fundamental defense-in-depth mechanisms that should be applied by default.
 **Prevention:** Implement a `secure_headers` middleware using `tower_http::set_header::SetResponseHeaderLayer::if_not_present` and apply it globally to the router builder.
+## 2025-02-23 - Missing Security Headers
+**Vulnerability:** The application was missing defense-in-depth headers `X-XSS-Protection` and `Content-Security-Policy`.
+**Learning:** Even with secure frameworks, explicit HTTP security headers are needed to instruct the browser to apply security policies to prevent attacks like Cross-Site Scripting (XSS).
+**Prevention:** Apply `X-XSS-Protection: 1; mode=block` and `Content-Security-Policy: default-src 'self'` globally using `tower_http::set_header::SetResponseHeaderLayer` in the middleware configuration.
