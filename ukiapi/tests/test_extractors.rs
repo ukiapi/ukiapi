@@ -111,3 +111,13 @@ async fn test_validated_json_extractor_validation_failure() {
     let response = client.post("/body", &body).send().await;
     assert_eq!(response.status(), 422);
 }
+#[tokio::test]
+async fn test_validated_json_extractor_missing_body() {
+    let api = routes![(), body_handler_route()];
+    let client = TestClient::new(api, ());
+
+    // To test a truly empty body with TestClient, we need to construct a Request manually,
+    // or we can test an invalid JSON string which evaluates the `Json::<T>::from_request` error.
+    let response = client.post("/body", &"").send().await;
+    assert_eq!(response.status(), 422);
+}
