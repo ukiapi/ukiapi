@@ -124,24 +124,30 @@ pub async fn create_item(
     let mut items = state.items.lock().unwrap();
     let next_id = items.len() as i32 + 1;
 
+    // ⚡ Bolt: Move `body.name` into `ItemDb` to avoid an allocation.
     let db_item = ItemDb {
         id: next_id,
-        name: body.name.clone(),
+        name: body.name,
         price: body.price,
         internal_secret: std::env::var("INTERNAL_SECRET").map_err(|_| {
             HTTPException::new(StatusCode::INTERNAL_SERVER_ERROR, "Server misconfiguration")
         })?,
     };
 
-    items.push(db_item.clone());
+    // ⚡ Bolt: Clone only the fields required for the response to avoid cloning the entire
+    // `ItemDb` struct (which contains unneeded allocations like `internal_secret`).
+    let response = ItemResponse {
+        id: db_item.id,
+        name: db_item.name.clone(),
+        price: db_item.price,
+    };
+
+    // ⚡ Bolt: Move the un-cloned `ItemDb` directly into the collection to eliminate unnecessary allocations.
+    items.push(db_item);
 
     Ok(Response::new(
         StatusCode::CREATED,
-        ukiapi::Json(ItemResponse {
-            id: db_item.id,
-            name: db_item.name,
-            price: db_item.price,
-        }),
+        ukiapi::Json(response),
     ))
 }
 

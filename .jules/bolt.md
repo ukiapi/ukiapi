@@ -11,3 +11,6 @@
 ## 2026-07-23 - Reuse String allocations using clear()
 **Learning:** When falling back to a static string while holding an owned `String` that is no longer needed, assigning a new `String` allocates memory.
 **Action:** Use `.clear()` and `.push_str()` on the existing `String` buffer to avoid allocation when the new content is smaller or similar in size.
+## 2024-11-21 - Avoiding Unnecessary Allocation in Struct Insertion
+**Learning:** In Rust, cloning an entire struct (like a database model) simply to satisfy the borrow checker when inserting it into a collection causes unnecessary memory allocations for all its fields.
+**Action:** Instead, clone only the specific fields needed (e.g., for an API response) and move the un-cloned struct into the collection to eliminate unnecessary memory allocations for large or unneeded fields.
